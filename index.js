@@ -16,7 +16,7 @@ const run = async () => {
     await client.connect();
 
     app.get("/", (req, res) => {
-      res.send("Hello world");
+      res.send("Server running");
     });
 
     app.use("/jobs", jobRouter);
