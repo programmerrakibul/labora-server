@@ -20,6 +20,7 @@ const getAllJobs = async (req, res) => {
 
 const postJob = async (req, res) => {
   const newJob = req.body;
+
   try {
     const result = await jobsCollection.insertOne(newJob);
     res.send({
@@ -30,7 +31,7 @@ const postJob = async (req, res) => {
   } catch {
     res.status(500).send({
       success: false,
-      message: "Job post failed",
+      message: "Job data post failed",
     });
   }
 };
@@ -42,20 +43,46 @@ const updateJobById = async (req, res) => {
   const update = {
     $set: updatedJob,
   };
+
   try {
     const result = await jobsCollection.updateOne(query, update);
 
     res.send({
       success: true,
-      message: "Job updated successfully",
+      message: "Job data updated successfully",
       ...result,
     });
   } catch {
     res.status(500).send({
       success: false,
-      message: "Job update failed",
+      message: "Job data update failed",
     });
   }
 };
 
-module.exports = { getAllJobs, postJob, updateJobById };
+const deleteJobById = async (req, res) => {
+  const { id } = req.params;
+  const query = { _id: new ObjectId(id) };
+
+  try {
+    const result = await jobsCollection.deleteOne(query);
+
+    res.send({
+      success: true,
+      message: "Job data deleted successfully",
+      ...result,
+    });
+  } catch {
+    res.status(500).send({
+      success: false,
+      message: "Job data delete failed",
+    });
+  }
+};
+
+module.exports = {
+  getAllJobs,
+  postJob,
+  updateJobById,
+  deleteJobById,
+};
