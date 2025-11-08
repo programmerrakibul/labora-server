@@ -10,7 +10,7 @@ const getAllJobs = async (req, res) => {
       message: "All jobs data retrieved successfully",
     });
   } catch {
-    res.send({
+    res.status(500).send({
       success: false,
       message: "Jobs data retrieved failed",
     });
@@ -18,7 +18,20 @@ const getAllJobs = async (req, res) => {
 };
 
 const postJob = async (req, res) => {
-  res.send(req.body);
+  const newJob = req.body;
+  try {
+    const result = await jobsCollection.insertOne(newJob);
+    res.send({
+      ...result,
+      success: true,
+      message: "Job data posted successfully",
+    });
+  } catch {
+    res.status(500).send({
+      success: false,
+      message: "Job post failed",
+    });
+  }
 };
 
 module.exports = { getAllJobs, postJob };
