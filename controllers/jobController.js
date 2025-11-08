@@ -1,6 +1,30 @@
 const { ObjectId } = require("mongodb");
 const { jobsCollection } = require("../db.js");
 
+const getLatestJobs = async (req, res) => {
+  const query = {};
+  const sortedBy = { created_at: -1 };
+
+  try {
+    const result = await jobsCollection
+      .find(query)
+      .limit(6)
+      .sort(sortedBy)
+      .toArray();
+
+    res.send({
+      latest_jobs: result,
+      success: true,
+      message: "Latest jobs data retrieved successfully",
+    });
+  } catch {
+    res.status(500).send({
+      success: false,
+      message: "Latest jobs data retrieved failed",
+    });
+  }
+};
+
 const getAllJobs = async (req, res) => {
   const query = {};
   try {
@@ -81,6 +105,7 @@ const deleteJobById = async (req, res) => {
 };
 
 module.exports = {
+  getLatestJobs,
   getAllJobs,
   postJob,
   updateJobById,

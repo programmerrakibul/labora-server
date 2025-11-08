@@ -4,9 +4,12 @@ const {
   postJob,
   updateJobById,
   deleteJobById,
+  getLatestJobs,
 } = require("../controllers/jobController.js");
 
 const jobRouter = express.Router();
+
+jobRouter.get("/latest", getLatestJobs);
 
 jobRouter.get("/", getAllJobs);
 
