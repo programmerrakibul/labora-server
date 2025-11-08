@@ -27,6 +27,7 @@ const getLatestJobs = async (req, res) => {
 
 const getAllJobs = async (req, res) => {
   const query = {};
+
   try {
     const result = await jobsCollection.find(query).toArray();
     res.send({
@@ -56,6 +57,25 @@ const postJob = async (req, res) => {
     res.status(500).send({
       success: false,
       message: "Job data post failed",
+    });
+  }
+};
+
+const getJobById = async (req, res) => {
+  const { id } = req.params;
+  const query = { _id: new ObjectId(id) };
+
+  try {
+    const result = await jobsCollection.findOne(query);
+    res.send({
+      success: true,
+      message: "Single job data retrieved successfully",
+      single_job: result,
+    });
+  } catch {
+    res.status(500).send({
+      success: false,
+      message: "Single job data retrieved failed",
     });
   }
 };
@@ -107,6 +127,7 @@ const deleteJobById = async (req, res) => {
 module.exports = {
   getLatestJobs,
   getAllJobs,
+  getJobById,
   postJob,
   updateJobById,
   deleteJobById,
