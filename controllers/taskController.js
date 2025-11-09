@@ -1,3 +1,4 @@
+const { ObjectId } = require("mongodb");
 const { tasksCollection } = require("../db.js");
 
 const postTask = async (req, res) => {
@@ -73,4 +74,24 @@ const getUserTasks = async (req, res) => {
   }
 };
 
-module.exports = { postTask, getUserTasks };
+const deleteTaskById = async (req, res) => {
+  const { id } = req.params;
+  const query = { _id: new ObjectId(id) };
+
+  try {
+    const result = await tasksCollection.deleteOne(query);
+
+    res.send({
+      success: true,
+      message: "Task deleted successfully",
+      ...result,
+    });
+  } catch {
+    res.status(500).send({
+      success: false,
+      message: "Task delete failed",
+    });
+  }
+};
+
+module.exports = { postTask, getUserTasks, deleteTaskById };
