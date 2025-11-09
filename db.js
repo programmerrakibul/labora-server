@@ -12,6 +12,6 @@ const client = new MongoClient(uri, {
 
 const database = client.db("labora-db");
 const jobsCollection = database.collection("all_jobs");
-const tasksCollection = database.collection("all_tasks");
+const tasksCollection = database.collection("added_tasks");
 
 module.exports = { client, jobsCollection, tasksCollection };

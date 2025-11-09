@@ -4,6 +4,7 @@ const express = require("express");
 const cors = require("cors");
 const { client } = require("./db.js");
 const jobRouter = require("./routes/jobRouter.js");
+const taskRouter = require("./routes/taskRouter.js");
 
 const app = express();
 const port = process.env.PORT || 8000;
@@ -20,6 +21,7 @@ const run = async () => {
     });
 
     app.use("/jobs", jobRouter);
+    app.use("/added-tasks", taskRouter);
 
     await client.db("admin").command({ ping: 1 });
     console.log("You successfully connected to MongoDB!");
