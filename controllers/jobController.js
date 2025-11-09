@@ -43,6 +43,35 @@ const getAllJobs = async (req, res) => {
   }
 };
 
+const getUserJobs = async (req, res) => {
+  const query = {};
+  const userEmail = req.query.email;
+
+  if (userEmail !== req.token_email) {
+    res.status(403).send({ message: "Forbidden Access" });
+    return;
+  }
+
+  if (userEmail) {
+    query.creator_email = userEmail;
+  }
+
+  try {
+    const result = await jobsCollection.find(query).toArray();
+
+    res.send({
+      success: false,
+      message: "User jobs data successfully retrieved",
+      user_jobs: result,
+    });
+  } catch {
+    res.status(500).send({
+      success: false,
+      message: "User jobs data retrieved failed",
+    });
+  }
+};
+
 const postJob = async (req, res) => {
   const newJob = req.body;
 
@@ -127,6 +156,7 @@ const deleteJobById = async (req, res) => {
 module.exports = {
   getLatestJobs,
   getAllJobs,
+  getUserJobs,
   getJobById,
   postJob,
   updateJobById,
