@@ -60,7 +60,7 @@ const getUserJobs = async (req, res) => {
     const result = await jobsCollection.find(query).toArray();
 
     res.send({
-      success: false,
+      success: true,
       message: "User jobs data successfully retrieved",
       user_jobs: result,
     });
