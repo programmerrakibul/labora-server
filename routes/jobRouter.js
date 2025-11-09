@@ -7,6 +7,8 @@ const {
   getLatestJobs,
   getJobById,
 } = require("../controllers/jobController.js");
+const validateTokenId = require("../middlewares/validateTokenId.js");
+const verifyTokenId = require("../middlewares/verifyTokenId.js");
 
 const jobRouter = express.Router();
 
@@ -14,12 +16,12 @@ jobRouter.get("/latest", getLatestJobs);
 
 jobRouter.get("/", getAllJobs);
 
-jobRouter.post("/", postJob);
+jobRouter.post("/", validateTokenId, verifyTokenId, postJob);
 
-jobRouter.get("/:id", getJobById);
+jobRouter.get("/:id", validateTokenId, verifyTokenId, getJobById);
 
-jobRouter.put("/:id", updateJobById);
+jobRouter.put("/:id", validateTokenId, verifyTokenId, updateJobById);
 
-jobRouter.delete("/:id", deleteJobById);
+jobRouter.delete("/:id", validateTokenId, verifyTokenId, deleteJobById);
 
 module.exports = jobRouter;
