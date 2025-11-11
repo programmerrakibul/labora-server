@@ -1,10 +1,9 @@
 const express = require("express");
 const {
-  getAllJobs,
+  getJobs,
   postJob,
   updateJobById,
   deleteJobById,
-  getLatestJobs,
   getJobById,
   getUserJobs,
 } = require("../controllers/jobController.js");
@@ -13,9 +12,7 @@ const verifyTokenId = require("../middlewares/verifyTokenId.js");
 
 const jobRouter = express.Router();
 
-jobRouter.get("/latest", getLatestJobs);
-
-jobRouter.get("/", getAllJobs);
+jobRouter.get("/", getJobs);
 
 jobRouter.get("/user", validateTokenId, verifyTokenId, getUserJobs);
 

@@ -1,37 +1,44 @@
 const { ObjectId } = require("mongodb");
 const { jobsCollection } = require("../db.js");
 
-const getLatestJobs = async (req, res) => {
+const getJobs = async (req, res) => {
   const query = {};
-  const sortedBy = { created_at: -1 };
+  const sortObj = {};
+  let projectField = {};
+  const { sortBy, sortOrder, limit, fields, excludes } = req.query;
+  const limitNum = Number(limit) || 0;
+  const sortField = sortBy || "posted_by";
+  const order = sortOrder === ("desc" || "-1") ? -1 : 1;
+  sortObj[sortField] = order;
+
+  if (fields) {
+    const fieldsArray = fields.split(",");
+    fieldsArray.forEach((field) => {
+      projectField[field.trim()] = 1;
+    });
+  }
+
+  if (excludes) {
+    const excludesArray = excludes.split(",");
+    excludesArray.forEach((field) => {
+      projectField[field.trim()] = 0;
+    });
+  }
+
+  if (Object.keys(projectField).length === 0) {
+    projectField = null;
+  }
 
   try {
     const result = await jobsCollection
       .find(query)
-      .limit(6)
-      .sort(sortedBy)
+      .sort(sortObj)
+      .limit(limitNum)
+      .project(projectField)
       .toArray();
 
     res.send({
-      latest_jobs: result,
-      success: true,
-      message: "Latest jobs data retrieved successfully",
-    });
-  } catch {
-    res.status(500).send({
-      success: false,
-      message: "Latest jobs data retrieved failed",
-    });
-  }
-};
-
-const getAllJobs = async (req, res) => {
-  const query = {};
-
-  try {
-    const result = await jobsCollection.find(query).toArray();
-    res.send({
-      all_jobs: result,
+      jobs: result,
       success: true,
       message: "All jobs data retrieved successfully",
     });
@@ -154,8 +161,7 @@ const deleteJobById = async (req, res) => {
 };
 
 module.exports = {
-  getLatestJobs,
-  getAllJobs,
+  getJobs,
   getUserJobs,
   getJobById,
   postJob,
