@@ -23,10 +23,12 @@ const run = async () => {
     app.use("/jobs", jobRouter);
     app.use("/added-tasks", taskRouter);
 
-    await client.db("admin").command({ ping: 1 });
-    console.log("You successfully connected to MongoDB!");
+    // await client.db("admin").command({ ping: 1 });
+    // console.log("You successfully connected to MongoDB!");
 
-    app.listen(port, () => console.log("Server running in port: ", port));
+    app.listen(port, () => {
+      // console.log("Server running in port: ", port);
+    });
   } finally {
     // await client.close();
   }
