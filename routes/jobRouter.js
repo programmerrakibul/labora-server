@@ -18,7 +18,7 @@ jobRouter.get("/user", validateTokenId, verifyTokenId, getUserJobs);
 
 jobRouter.post("/", validateTokenId, verifyTokenId, postJob);
 
-jobRouter.get("/:id", validateTokenId, verifyTokenId, getJobById);
+jobRouter.get("/:id", getJobById);
 
 jobRouter.put("/:id", validateTokenId, verifyTokenId, updateJobById);
 
