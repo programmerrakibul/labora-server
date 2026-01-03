@@ -5,8 +5,9 @@ const getJobs = async (req, res) => {
   const query = {};
   const sortObj = {};
   let projectField = {};
-  const { sortBy, sortOrder, limit, fields, excludes } = req.query;
+  const { sortBy, sortOrder, limit, skip, fields, excludes } = req.query;
   const limitNum = Number(limit) || 0;
+  const skipNum = Number(skip) || 0;
   const sortField = sortBy || "posted_by";
   const order = sortOrder === ("desc" || "-1") ? -1 : 1;
   sortObj[sortField] = order;
@@ -34,6 +35,7 @@ const getJobs = async (req, res) => {
       .find(query)
       .sort(sortObj)
       .limit(limitNum)
+      .skip(skipNum)
       .project(projectField)
       .toArray();
 
