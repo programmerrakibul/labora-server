@@ -136,9 +136,12 @@ const getUserJobs = async (req, res) => {
 
 const postJob = async (req, res) => {
   const newJob = req.body;
+  newJob.created_at = new Date().toISOString();
+  newJob.status = "pending";
 
   try {
     const result = await jobsCollection.insertOne(newJob);
+
     res.send({
       ...result,
       success: true,
