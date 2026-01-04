@@ -2,52 +2,105 @@ const { ObjectId } = require("mongodb");
 const { jobsCollection } = require("../db.js");
 
 const getJobs = async (req, res) => {
-  const query = {};
-  const sortObj = {};
+  let query = {};
+  let sortObj = {};
   let projectField = {};
-  const { sortBy, sortOrder, limit, skip, fields, excludes } = req.query;
-  const limitNum = Number(limit) || 0;
-  const skipNum = Number(skip) || 0;
-  const sortField = sortBy || "posted_by";
-  const order = sortOrder === ("desc" || "-1") ? -1 : 1;
-  sortObj[sortField] = order;
 
-  if (fields) {
-    const fieldsArray = fields.split(",");
-    fieldsArray.forEach((field) => {
+  const {
+    search,
+    job_category,
+    job_type,
+    location,
+    experience_level,
+    sortBy = "created_at",
+    sortOrder = "desc",
+    page = 1,
+    limit = 12,
+    fields,
+    excludes,
+  } = req.query;
+
+  const pageNum = Math.max(1, Number(page));
+  const limitNum = Math.min(100, Math.max(1, Number(limit))); // cap at 100
+  const skipNum = (pageNum - 1) * limitNum;
+
+  // Sorting
+  const order = sortOrder === "asc" ? 1 : -1;
+  sortObj[sortBy] = order;
+
+  // Text Search
+  if (search?.trim()) {
+    const searchRegex = { $regex: search.trim(), $options: "i" };
+    query.$or = [
+      { job_title: searchRegex },
+      { job_summary: searchRegex },
+      { posted_by: searchRegex },
+    ];
+  }
+
+  // Filters
+  if (job_category?.trim()) query.job_category = job_category.trim();
+  if (job_type?.trim()) query.job_type = job_type.trim();
+  if (location?.trim()) {
+    query.location = { $regex: location.trim(), $options: "i" };
+  }
+  if (experience_level?.trim())
+    query.experience_level = experience_level.trim();
+
+  // Field Projection
+  if (fields?.trim()) {
+    fields.split(",").forEach((field) => {
       projectField[field.trim()] = 1;
     });
   }
 
-  if (excludes) {
-    const excludesArray = excludes.split(",");
-    excludesArray.forEach((field) => {
+  if (excludes?.trim()) {
+    excludes.split(",").forEach((field) => {
       projectField[field.trim()] = 0;
     });
   }
 
+  // If no projection specified, exclude sensitive/large fields by default
   if (Object.keys(projectField).length === 0) {
-    projectField = null;
+    projectField = {
+      creator_email: 0,
+      requirements: 0,
+      responsibilities: 0,
+      benefits: 0,
+      company_description: 0,
+    };
   }
 
   try {
-    const result = await jobsCollection
+    // Get total count for pagination
+    const total = await jobsCollection.countDocuments(query);
+
+    // Fetch jobs
+    const jobs = await jobsCollection
       .find(query)
       .sort(sortObj)
-      .limit(limitNum)
       .skip(skipNum)
+      .limit(limitNum)
       .project(projectField)
       .toArray();
 
-    res.send({
-      jobs: result,
+    res.status(200).json({
       success: true,
-      message: "All jobs data retrieved successfully",
+      message: "Jobs retrieved successfully",
+      jobs,
+      pagination: {
+        currentPage: pageNum,
+        totalPages: Math.ceil(total / limitNum),
+        totalJobs: total,
+        hasNext: pageNum < Math.ceil(total / limitNum),
+        hasPrev: pageNum > 1,
+      },
     });
-  } catch {
-    res.status(500).send({
+  } catch (error) {
+    console.error("Error fetching jobs:", error);
+    res.status(500).json({
       success: false,
-      message: "Jobs data retrieved failed",
+      message: "Failed to retrieve jobs",
     });
   }
 };
