@@ -15,7 +15,7 @@ app.use(cors());
 
 const run = async () => {
   try {
-    await client.connect();
+    // await client.connect();
 
     app.get("/", (req, res) => {
       res.send("Server running");

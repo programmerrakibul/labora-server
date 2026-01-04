@@ -96,8 +96,7 @@ const getJobs = async (req, res) => {
         hasPrev: pageNum > 1,
       },
     });
-  } catch (error) {
-    console.error("Error fetching jobs:", error);
+  } catch {
     res.status(500).json({
       success: false,
       message: "Failed to retrieve jobs",

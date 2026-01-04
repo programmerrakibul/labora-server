@@ -195,8 +195,7 @@ const getDashboardStats = async (req, res) => {
     };
 
     res.status(200).send(response);
-  } catch (error) {
-    console.error("Error fetching dashboard stats:", error);
+  } catch {
     res.status(500).send({
       success: false,
       message: "Failed to retrieve dashboard statistics",
