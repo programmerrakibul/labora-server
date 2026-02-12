@@ -1,4 +1,4 @@
-const { jobsCollection } = require("../db.js");
+const { jobsCollection } = require("../config/db.js");
 
 const getDashboardStats = async (req, res) => {
   const userEmail = req.token_email;
@@ -98,7 +98,7 @@ const getDashboardStats = async (req, res) => {
                 $match: {
                   created_at: {
                     $gte: new Date(
-                      Date.now() - 30 * 24 * 60 * 60 * 1000
+                      Date.now() - 30 * 24 * 60 * 60 * 1000,
                     ).toISOString(),
                   },
                 },

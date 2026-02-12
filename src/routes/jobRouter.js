@@ -1,4 +1,6 @@
 const express = require("express");
+const validateTokenId = require("../middlewares/validateTokenId.js");
+const verifyTokenId = require("../middlewares/verifyTokenId.js");
 const {
   getJobs,
   postJob,
@@ -7,8 +9,6 @@ const {
   getJobById,
   getUserJobs,
 } = require("../controllers/jobController.js");
-const validateTokenId = require("../middlewares/validateTokenId.js");
-const verifyTokenId = require("../middlewares/verifyTokenId.js");
 
 const jobRouter = express.Router();
 

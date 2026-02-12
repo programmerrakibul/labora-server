@@ -1,5 +1,5 @@
 const { ObjectId } = require("mongodb");
-const { jobsCollection } = require("../db.js");
+const { jobsCollection } = require("../config/db.js");
 
 const getJobs = async (req, res) => {
   let query = {};

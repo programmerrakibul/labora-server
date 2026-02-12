@@ -2,7 +2,7 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
-const { client } = require("./db.js");
+const { client } = require("./config/db.js");
 const jobRouter = require("./routes/jobRouter.js");
 const taskRouter = require("./routes/taskRouter.js");
 const dashboardRouter = require("./routes/dashboardRouter.js");
@@ -18,15 +18,19 @@ const run = async () => {
     // await client.connect();
 
     app.get("/", (req, res) => {
-      res.send("Server running");
+      res.send({ success: true, message: "Labora server is running!" });
     });
 
     app.use("/jobs", jobRouter);
     app.use("/added-tasks", taskRouter);
     app.use("/dashboard", dashboardRouter);
 
-    // await client.db("admin").command({ ping: 1 });
-    // console.log("You successfully connected to MongoDB!");
+    app.use((req, res) => {
+      res.status(404).send({
+        success: false,
+        message: "Route not found",
+      });
+    });
 
     app.listen(port, () => {
       // console.log("Server running in port: ", port);

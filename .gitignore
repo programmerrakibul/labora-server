@@ -3,3 +3,4 @@ node_modules
 encode.js
 labora-firebase-adminsdk.json
 .vercel
+.vscode

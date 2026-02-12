@@ -1,5 +1,5 @@
 const { ObjectId } = require("mongodb");
-const { tasksCollection } = require("../db.js");
+const { tasksCollection } = require("../config/db.js");
 
 const postTask = async (req, res) => {
   const newTask = req.body;
