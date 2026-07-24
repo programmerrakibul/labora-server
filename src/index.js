@@ -7,6 +7,9 @@ const jobRouter = require("./routes/jobRouter.js");
 const taskRouter = require("./routes/taskRouter.js");
 const dashboardRouter = require("./routes/dashboardRouter.js");
 
+const dns = require("dns");
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
+
 const app = express();
 const port = process.env.PORT || 8000;
 
@@ -15,7 +18,7 @@ app.use(cors());
 
 const run = async () => {
   try {
-    // await client.connect();
+    await client.connect();
 
     app.get("/", (req, res) => {
       res.send({ success: true, message: "Labora server is running!" });
@@ -33,10 +36,10 @@ const run = async () => {
     });
 
     app.listen(port, () => {
-      // console.log("Server running in port: ", port);
+      console.log("Server running in port: ", port);
     });
   } finally {
-    // await client.close();
+    await client.close();
   }
 };
 run().catch(console.dir);
