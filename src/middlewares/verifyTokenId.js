@@ -1,4 +1,4 @@
-const admin = require("firebase-admin");
+import admin from "firebase-admin";
 
 const FIREBASE_SERVICE_KEY = process.env.FIREBASE_SERVICE_KEY;
 
