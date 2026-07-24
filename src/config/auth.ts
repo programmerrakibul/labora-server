@@ -22,10 +22,54 @@ export const initAuth = () => {
       additionalFields: {
         role: {
           type: [Role.JOB_SEEKER, Role.EMPLOYER, Role.ADMIN],
-          default: Role.JOB_SEEKER,
+          defaultValue: Role.JOB_SEEKER,
           input: false,
           index: true,
           required: false,
+        },
+
+        phoneNumber: {
+          type: "string",
+          defaultValue: "",
+          required: false,
+          input: true,
+        },
+
+        address: {
+          type: "string",
+          defaultValue: "",
+          required: false,
+          input: true,
+        },
+
+        city: {
+          type: "string",
+          defaultValue: "",
+          required: false,
+          input: true,
+        },
+
+        country: {
+          type: "string",
+          defaultValue: "",
+          required: false,
+          input: true,
+        },
+
+        isActive: {
+          type: "boolean",
+          defaultValue: true,
+          required: false,
+          input: false,
+          returned: false,
+        },
+
+        isDeleted: {
+          type: "boolean",
+          defaultValue: false,
+          required: false,
+          input: false,
+          returned: false,
         },
       },
     },

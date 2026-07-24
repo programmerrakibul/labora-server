@@ -16,4 +16,6 @@ export type TUser = Document & {
   address?: string;
   city?: string;
   country?: string;
+  isActive: boolean;
+  isDeleted: boolean;
 };

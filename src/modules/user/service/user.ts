@@ -3,7 +3,12 @@ import User from "@/user/model/user.js";
 import { NotFoundError } from "http-errors-enhanced";
 
 const getUsers = async () => {
-  const users = await User.paginate({})
+  const users = await User.paginate(
+    {},
+    {
+      sort: { createdAt: -1 },
+    },
+  );
 
   return users;
 };
