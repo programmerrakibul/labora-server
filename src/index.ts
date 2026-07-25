@@ -13,8 +13,6 @@ import { globalErrorHandler } from "@/middlewares/global-error-handler.js";
 import { verifyToken } from "@/middlewares/verify-token.js";
 import userRouter from "@/user/routes/user.js";
 import { sendSuccessResponse } from "@/utils/sendResponse.js";
-import { authorize } from "./middlewares/authorize.js";
-import { Role } from "./modules/user/interface/user.js";
 
 const app = express();
 const { PORT, CLIENT_URL, BETTER_AUTH_URL } = getEnv();
@@ -37,14 +35,6 @@ const startServer = async () => {
     app.all(`${API_PREFIX}/auth/*splat`, toNodeHandler(auth));
 
     app.use(express.json());
-
-    app.get(
-      "/api/test",
-      authorize(Role.EMPLOYER),
-      (_req: Request, res: Response) => {
-        sendSuccessResponse(res, status.OK, { message: "You are authorized" });
-      },
-    );
 
     app.get("/", (_req: Request, res: Response) => {
       sendSuccessResponse(res, status.OK, { message: "Server is running" });
