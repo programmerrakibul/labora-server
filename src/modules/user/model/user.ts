@@ -71,12 +71,6 @@ const schema = new Schema<TUser>(
       default: true,
       index: true,
     },
-
-    isDeleted: {
-      type: Boolean,
-      default: false,
-      index: true,
-    },
   },
   {
     timestamps: true,

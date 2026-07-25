@@ -3,12 +3,15 @@ import { getEnv } from "@/config/env.js";
 import { Role } from "@/modules/user/interface/user.js";
 import { mongodbAdapter } from "@better-auth/mongo-adapter";
 import { betterAuth } from "better-auth/minimal";
+import { bearer } from "better-auth/plugins";
 
 const { BETTER_AUTH_SECRET, BETTER_AUTH_URL } = getEnv();
 
 export const initAuth = () => {
   return betterAuth({
     database: mongodbAdapter(getNativeDb()),
+
+    plugins: [bearer()],
 
     appName: "Labora - An Online Job Marketplace Platform",
     emailAndPassword: {
@@ -59,14 +62,6 @@ export const initAuth = () => {
         isActive: {
           type: "boolean",
           defaultValue: true,
-          required: false,
-          input: false,
-          returned: false,
-        },
-
-        isDeleted: {
-          type: "boolean",
-          defaultValue: false,
           required: false,
           input: false,
           returned: false,

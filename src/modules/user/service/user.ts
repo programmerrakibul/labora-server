@@ -1,5 +1,6 @@
 import type { TUser } from "@/user/interface/user.js";
 import User from "@/user/model/user.js";
+import { getPaginateData } from "@/utils/getPaginateData.js";
 import { NotFoundError } from "http-errors-enhanced";
 
 const getUsers = async () => {
@@ -10,7 +11,7 @@ const getUsers = async () => {
     },
   );
 
-  return users;
+  return getPaginateData<TUser>(users);
 };
 
 const getUserById = async (id: string) => {

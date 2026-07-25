@@ -5,7 +5,7 @@
 
     "module": "nodenext",
     "target": "esnext",
-    "types": ["express", "mongoose", "cors"],
+    "types": ["express", "cors", "node"],
 
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
@@ -22,8 +22,10 @@
     "skipLibCheck": true,
 
     "paths": {
-      "@/*": ["./src/*", "./src/modules/*"],
-    }
+      "@/*": ["./src/*", "./src/modules/*"]
+    },
+
+    "typeRoots": ["./node_modules/@types", "./src/types"]
   },
 
   "exclude": ["node_modules"]

@@ -4,12 +4,11 @@ import type { Request, Response } from "express";
 import status from "http-status";
 
 const getUsers = async (_req: Request, res: Response) => {
-  const { docs, ...pagination } = await services.getUsers();
+  const result = await services.getUsers();
 
   sendSuccessResponse(res, status.OK, {
     message: "Users data successfully retrieved",
-    data: docs,
-    pagination,
+    ...result,
   });
 };
 

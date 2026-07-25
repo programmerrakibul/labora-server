@@ -1,10 +1,21 @@
 import type { Response } from "express";
+import type { CustomLabels } from "mongoose";
+
+export type TPaginateLabel = CustomLabels<number | boolean | null | undefined>;
+
+export type TPagination = {
+  totalDocs: TPaginateLabel["totalDocs"];
+  hasPrevPage: TPaginateLabel["hasPrevPage"];
+  hasNextPage: TPaginateLabel["hasNextPage"];
+  totalPages: TPaginateLabel["totalPages"];
+  page?: TPaginateLabel["page"];
+};
 
 export type TSuccessResponse<T> = {
   success: true;
   message: string;
   data?: T;
-  pagination?: unknown;
+  pagination?: TPagination;
 };
 
 export type TErrorResponse = {
