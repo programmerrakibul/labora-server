@@ -2,7 +2,7 @@ import type { Document } from "mongoose";
 
 export enum Role {
   JOB_SEEKER = "JOB_SEEKER",
-  EMPLOYER = "EMPLOYER",
+  RECRUITER = "RECRUITER",
   ADMIN = "ADMIN",
 }
 

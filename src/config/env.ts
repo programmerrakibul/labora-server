@@ -46,6 +46,18 @@ const envSchema = z.object({
   BETTER_AUTH_URL: z
     .string("Please provide a valid BETTER_AUTH_URL in env file!")
     .min(1, "Please provide a valid BETTER_AUTH_URL in env file!"),
+
+  CLOUDINARY_CLOUD_NAME: z
+    .string("Please provide a valid CLOUDINARY_CLOUD_NAME in env file!")
+    .min(1, "Please provide a valid CLOUDINARY_CLOUD_NAME in env file!"),
+
+  CLOUDINARY_API_KEY: z
+    .string("Please provide a valid CLOUDINARY_API_KEY in env file!")
+    .min(1, "Please provide a valid CLOUDINARY_API_KEY in env file!"),
+
+  CLOUDINARY_API_SECRET: z
+    .string("Please provide a valid CLOUDINARY_API_SECRET in env file!")
+    .min(1, "Please provide a valid CLOUDINARY_API_SECRET in env file!"),
 });
 
 export const getEnv = () => {

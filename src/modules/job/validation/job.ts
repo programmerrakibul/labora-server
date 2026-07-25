@@ -77,8 +77,34 @@ export const CreateJobSchema = z.object({
   expiresAt: z.coerce.date().optional(),
 });
 
+export const UpdateJobSchema = CreateJobSchema.partial();
+
+export const UpdateJobStatusSchema = z.object({
+  status: JobStatusEnum,
+});
+
+export const JobQuerySchema = z.object({
+  search: z.string().optional(),
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(50).default(10),
+  category: z.string().optional(),
+  experienceLevel: ExperienceLevelEnum.optional(),
+  jobType: JobTypeEnum.optional(),
+  workLocationType: WorkLocationEnum.optional(),
+  status: JobStatusEnum.optional(),
+  minSalary: z.coerce.number().min(0).optional(),
+  maxSalary: z.coerce.number().min(0).optional(),
+  sortBy: z
+    .enum(["createdAt", "title", "salary.min", "salary.max"])
+    .default("createdAt"),
+  sortOrder: z.enum(["asc", "desc"]).default("desc"),
+});
+
 export type TJobType = z.infer<typeof JobTypeEnum>;
 export type TWorkLocation = z.infer<typeof WorkLocationEnum>;
 export type TExperienceLevel = z.infer<typeof ExperienceLevelEnum>;
 export type TJobStatus = z.infer<typeof JobStatusEnum>;
 export type TCreateJobInput = z.infer<typeof CreateJobSchema>;
+export type TUpdateJobInput = z.infer<typeof UpdateJobSchema>;
+export type TUpdateJobStatusInput = z.infer<typeof UpdateJobStatusSchema>;
+export type TJobQuery = z.infer<typeof JobQuerySchema>;
