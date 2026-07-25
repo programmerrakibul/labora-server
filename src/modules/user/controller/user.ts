@@ -3,11 +3,11 @@ import { sendSuccessResponse } from "@/utils/sendResponse.js";
 import type { Request, Response } from "express";
 import status from "http-status";
 
-const getUsers = async (_req: Request, res: Response) => {
-  const result = await services.getUsers();
+const getUsers = async (req: Request, res: Response) => {
+  const result = await services.getUsers(req.query);
 
   sendSuccessResponse(res, status.OK, {
-    message: "Users data successfully retrieved",
+    message: "Users retrieved successfully",
     ...result,
   });
 };
@@ -16,14 +16,43 @@ const getUserById = async (req: Request<{ id: string }>, res: Response) => {
   const result = await services.getUserById(req.params.id);
 
   sendSuccessResponse(res, status.OK, {
-    message: "Single user data retrieved successfully",
+    message: "User retrieved successfully",
     data: result,
   });
 };
 
+const updateProfile = async (req: Request, res: Response) => {
+  const result = await services.updateProfile(req.user!.id, req.body);
+
+  sendSuccessResponse(res, status.OK, {
+    message: "Profile updated successfully",
+    data: result,
+  });
+};
+
+const updateUserStatus = async (req: Request<{ id: string }>, res: Response) => {
+  const result = await services.updateUserStatus(req.params.id, req.body);
+
+  sendSuccessResponse(res, status.OK, {
+    message: "User status updated successfully",
+    data: result,
+  });
+};
+
+const deleteUser = async (req: Request<{ id: string }>, res: Response) => {
+  const result = await services.deleteUser(req.params.id);
+
+  sendSuccessResponse(res, status.OK, {
+    message: result.message,
+  });
+};
+
 const controllers = {
-  getUserById,
   getUsers,
+  getUserById,
+  updateProfile,
+  updateUserStatus,
+  deleteUser,
 };
 
 export default controllers;

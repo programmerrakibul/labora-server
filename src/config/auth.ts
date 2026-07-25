@@ -24,7 +24,7 @@ export const initAuth = () => {
     user: {
       additionalFields: {
         role: {
-          type: [Role.JOB_SEEKER, Role.EMPLOYER, Role.ADMIN],
+          type: [Role.JOB_SEEKER, Role.RECRUITER, Role.ADMIN],
           defaultValue: Role.JOB_SEEKER,
           input: false,
           index: true,

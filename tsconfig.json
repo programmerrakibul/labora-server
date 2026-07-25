@@ -5,7 +5,7 @@
 
     "module": "nodenext",
     "target": "esnext",
-    "types": ["express", "cors", "node"],
+    "types": ["express", "cors", "node", "multer"],
 
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
