@@ -62,12 +62,7 @@ const schema = new Schema<TAsset>(
     folder: {
       type: String,
       trim: true,
-    },
-
-    tags: {
-      type: [String],
-      default: [],
-    },
+    }
   },
 
   {

@@ -11,8 +11,6 @@ import type { Request } from "express";
 import { NotFoundError } from "http-errors-enhanced";
 import multer from "multer";
 
-const DataURIParser = require("datauri/parser");
-
 const { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } =
   getEnv();
 
@@ -48,19 +46,17 @@ export const upload = multer({
   },
 });
 
-const uploadToCloudinary = async (file: Express.Multer.File) => {
-  const parser = new DataURIParser();
-  const buffer = file.buffer;
+const bufferToDataUri = (mimetype: string, buffer: Buffer): string => {
   const base64 = buffer.toString("base64");
+  return `data:${mimetype};base64,${base64}`;
+};
 
-  const dataUri = parser.format(
-    `.${file.originalname.split(".").pop()}`,
-    base64,
-  );
+const uploadToCloudinary = async (file: Express.Multer.File) => {
+  const dataUri = bufferToDataUri(file.mimetype, file.buffer);
 
   const resourceType = file.mimetype.startsWith("image/") ? "image" : "raw";
 
-  const result = await cloudinary.uploader.upload(dataUri.content || "", {
+  const result = await cloudinary.uploader.upload(dataUri, {
     resource_type: resourceType,
     folder: CLOUDINARY_FOLDERS.DOCUMENTS,
   });

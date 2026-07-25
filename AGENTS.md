@@ -144,7 +144,7 @@ src/
 - Unique compound: {jobId, applicantId}
 - Indexes: compound (jobId,status,createdAt), compound (applicantId,createdAt)
 
-### asset (to be created)
+### asset
 
 - publicId, url, secureUrl, resourceType, format, bytes, width, height,
   originalName, mimeType, uploadedBy (ref: User), folder, tags[], timestamps
@@ -162,30 +162,35 @@ src/
 
 - `GET /api/users` - List users (paginated, admin only)
 - `GET /api/users/:id` - Get single user
+- `PUT /api/users/profile` - Update own profile (authenticated)
+- `PATCH /api/users/:id/status` - Toggle user status (admin)
+- `DELETE /api/users/:id` - Delete user (admin)
 
-### Jobs (to be implemented)
+### Jobs
 
 - `GET /api/jobs` - List jobs (public, with filtering)
+- `GET /api/jobs/user` - Get jobs by authenticated user
 - `GET /api/jobs/:id` - Get single job
 - `POST /api/jobs` - Create job (RECRUITER only)
 - `PUT /api/jobs/:id` - Update job (RECRUITER, owner only)
+- `PATCH /api/jobs/:id/status` - Update job status (RECRUITER, owner only)
 - `DELETE /api/jobs/:id` - Delete job (RECRUITER, owner only)
 
-### Applications (to be implemented)
+### Applications
 
-- `POST /api/applications` - Apply to job (JOB_SEEKER only)
 - `GET /api/applications` - List applications (filtered by role)
 - `GET /api/applications/:id` - Get single application
-- `PUT /api/applications/:id/status` - Update status (RECRUITER/ADMIN)
+- `POST /api/applications` - Apply to job (JOB_SEEKER only)
+- `PATCH /api/applications/:id/status` - Update status (RECRUITER/ADMIN)
 - `DELETE /api/applications/:id` - Withdraw application (JOB_SEEKER, owner only)
 
-### Assets (to be implemented)
+### Assets
 
 - `POST /api/assets/upload` - Upload file (authenticated)
 - `GET /api/assets/:id` - Get asset metadata
 - `DELETE /api/assets/:id` - Delete asset (owner only)
 
-### Dashboard (to be implemented)
+### Dashboard
 
 - `GET /api/dashboard/admin` - Admin stats
 - `GET /api/dashboard/recruiter` - Recruiter stats

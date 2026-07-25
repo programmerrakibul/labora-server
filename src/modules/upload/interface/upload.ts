@@ -12,5 +12,4 @@ export type TAsset = Document & {
   originalName: string;
   mimeType: string;
   folder?: string;
-  tags: string[];
 };

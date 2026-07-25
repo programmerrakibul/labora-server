@@ -1,20 +1,31 @@
 import type { TApplication } from "@/application/interface/application.js";
 import Application from "@/application/model/application.js";
-import { getPaginateData } from "@/utils/getPaginateData.js";
-import { parseOrThrow, transformToObjectId, validateObjectId } from "@/utils/utils.js";
 import {
-  CreateApplicationSchema,
+  APPLICATION_STATUS,
   ApplicationQuerySchema,
+  CreateApplicationSchema,
   UpdateApplicationStatusSchema,
 } from "@/application/validation/application.js";
-import { ConflictError, ForbiddenError, NotFoundError } from "http-errors-enhanced";
+import { Role } from "@/user/interface/user.js";
+import { getPaginateData } from "@/utils/getPaginateData.js";
+import {
+  parseOrThrow,
+  transformToObjectId,
+  validateObjectId,
+} from "@/utils/utils.js";
+import {
+  BadRequestError,
+  ConflictError,
+  NotFoundError,
+} from "http-errors-enhanced";
 
-const createApplication = async (data: unknown, applicantId: string) => {
+const createApplication = async (data: unknown, id: string) => {
   const validatedData = parseOrThrow(CreateApplicationSchema, data);
+  const applicantId = transformToObjectId(id);
 
   const existingApplication = await Application.findOne({
     jobId: validatedData.jobId,
-    applicantId: transformToObjectId(applicantId),
+    applicantId,
   })
     .lean()
     .exec();
@@ -25,22 +36,27 @@ const createApplication = async (data: unknown, applicantId: string) => {
 
   const application = await Application.create({
     ...validatedData,
-    applicantId: transformToObjectId(applicantId),
+    applicantId,
   });
 
   return application;
 };
 
-const getApplications = async (query: unknown, userId: string, role: string) => {
+const getApplications = async (
+  query: unknown,
+  userId: string,
+  role: string,
+) => {
   const validatedQuery = parseOrThrow(ApplicationQuerySchema, query);
+  const id = transformToObjectId(userId);
 
   const filter: Record<string, unknown> = {};
 
-  if (role === "JOB_SEEKER") {
-    filter.applicantId = transformToObjectId(userId);
-  } else if (role === "RECRUITER") {
+  if (role === Role.JOB_SEEKER) {
+    filter.applicantId = id;
+  } else if (role === Role.RECRUITER) {
     filter.$expr = {
-      $eq: ["$jobId.postedBy", transformToObjectId(userId)],
+      $eq: ["$jobId.postedBy", id],
     };
   }
 
@@ -75,7 +91,7 @@ const getApplications = async (query: unknown, userId: string, role: string) => 
 
 const getApplicationById = async (id: string) => {
   if (!validateObjectId(id)) {
-    throw new NotFoundError("Invalid application ID.");
+    throw new BadRequestError("Invalid application ID.");
   }
 
   const application = await Application.findById(id)
@@ -89,14 +105,9 @@ const getApplicationById = async (id: string) => {
   return application;
 };
 
-const updateApplicationStatus = async (
-  id: string,
-  data: unknown,
-  _userId: string,
-  _role: string,
-) => {
+const updateApplicationStatus = async (id: string, data: unknown) => {
   if (!validateObjectId(id)) {
-    throw new NotFoundError("Invalid application ID.");
+    throw new BadRequestError("Invalid application ID.");
   }
 
   const validatedData = parseOrThrow(UpdateApplicationStatusSchema, data);
@@ -123,19 +134,18 @@ const withdrawApplication = async (id: string, userId: string) => {
     throw new NotFoundError("Invalid application ID.");
   }
 
-  const application = await Application.findById(id).lean().exec();
+  const application = await Application.findOne({
+    _id: id,
+    applicantId: userId,
+  })
+    .lean()
+    .exec();
 
   if (!application) throw new NotFoundError("Application not found.");
 
-  if (application.applicantId.toString() !== userId) {
-    throw new ForbiddenError(
-      "You are not authorized to withdraw this application.",
-    );
-  }
-
   const updatedApplication = await Application.findByIdAndUpdate(
     id,
-    { status: "WITHDRAWN" },
+    { status: APPLICATION_STATUS.WITHDRAWN },
     { new: true, runValidators: true },
   )
     .lean()

@@ -1,14 +1,20 @@
 import type { TJob } from "@/job/interface/job.js";
 import Job from "@/job/model/job.js";
-import { getPaginateData } from "@/utils/getPaginateData.js";
-import { double, parseOrThrow, transformToObjectId, validateObjectId } from "@/utils/utils.js";
-import { ForbiddenError, NotFoundError } from "http-errors-enhanced";
 import {
   CreateJobSchema,
+  JOB_STATUS,
   JobQuerySchema,
   UpdateJobSchema,
   UpdateJobStatusSchema,
 } from "@/job/validation/job.js";
+import { getPaginateData } from "@/utils/getPaginateData.js";
+import {
+  double,
+  parseOrThrow,
+  transformToObjectId,
+  validateObjectId,
+} from "@/utils/utils.js";
+import { BadRequestError, NotFoundError } from "http-errors-enhanced";
 
 const createJob = async (data: unknown, postedById: string) => {
   const validatedData = parseOrThrow(CreateJobSchema, data);
@@ -29,7 +35,7 @@ const createJob = async (data: unknown, postedById: string) => {
 const getJobs = async (query: unknown) => {
   const validatedQuery = parseOrThrow(JobQuerySchema, query);
 
-  const filter: Record<string, unknown> = { status: "ACTIVE" };
+  const filter: Record<string, unknown> = { status: JOB_STATUS.ACTIVE };
 
   if (validatedQuery.search) {
     filter.$text = { $search: validatedQuery.search };
@@ -114,7 +120,7 @@ const getJobsByUser = async (userId: string, query: unknown) => {
 
 const getJobById = async (id: string) => {
   if (!validateObjectId(id)) {
-    throw new NotFoundError("Invalid job ID.");
+    throw new BadRequestError("Invalid job ID.");
   }
 
   const job = await Job.findById(id)
@@ -143,13 +149,14 @@ const updateJob = async (id: string, data: unknown, userId: string) => {
     }
   }
 
-  const job = await Job.findById(id).lean().exec();
+  const job = await Job.findOne({
+    _id: id,
+    postedBy: userId,
+  })
+    .lean()
+    .exec();
 
   if (!job) throw new NotFoundError("Job not found.");
-
-  if (job.postedBy.toString() !== userId) {
-    throw new ForbiddenError("You are not authorized to update this job.");
-  }
 
   const updatedJob = await Job.findByIdAndUpdate(id, validatedData, {
     new: true,
@@ -167,13 +174,14 @@ const deleteJob = async (id: string, userId: string) => {
     throw new NotFoundError("Invalid job ID.");
   }
 
-  const job = await Job.findById(id).lean().exec();
+  const job = await Job.findOne({
+    _id: id,
+    postedBy: userId,
+  })
+    .lean()
+    .exec();
 
   if (!job) throw new NotFoundError("Job not found.");
-
-  if (job.postedBy.toString() !== userId) {
-    throw new ForbiddenError("You are not authorized to delete this job.");
-  }
 
   await Job.findByIdAndDelete(id);
 
@@ -187,13 +195,14 @@ const updateJobStatus = async (id: string, data: unknown, userId: string) => {
 
   const validatedData = parseOrThrow(UpdateJobStatusSchema, data);
 
-  const job = await Job.findById(id).lean().exec();
+  const job = await Job.findOne({
+    _id: id,
+    postedBy: userId,
+  })
+    .lean()
+    .exec();
 
   if (!job) throw new NotFoundError("Job not found.");
-
-  if (job.postedBy.toString() !== userId) {
-    throw new ForbiddenError("You are not authorized to update this job.");
-  }
 
   const updatedJob = await Job.findByIdAndUpdate(
     id,

@@ -44,8 +44,6 @@ const updateApplicationStatus = async (
   const result = await services.updateApplicationStatus(
     req.params.id,
     req.body,
-    req.user!.id,
-    req.user!.role,
   );
 
   sendSuccessResponse(res, status.OK, {

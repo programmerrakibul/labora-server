@@ -40,7 +40,11 @@ const getJobById = async (req: Request<{ id: string }>, res: Response) => {
 };
 
 const updateJob = async (req: Request<{ id: string }>, res: Response) => {
-  const result = await services.updateJob(req.params.id, req.body, req.user!.id);
+  const result = await services.updateJob(
+    req.params.id,
+    req.body,
+    req.user!.id,
+  );
 
   sendSuccessResponse(res, status.OK, {
     message: "Job updated successfully",
