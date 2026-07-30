@@ -3,23 +3,31 @@ import { getEnv } from "@/config/env.js";
 import { Role } from "@/modules/user/interface/user.js";
 import { mongodbAdapter } from "@better-auth/mongo-adapter";
 import { betterAuth } from "better-auth/minimal";
-import { bearer } from "better-auth/plugins";
 
-const { BETTER_AUTH_SECRET, BETTER_AUTH_URL } = getEnv();
+const env = getEnv();
 
 export const initAuth = () => {
   return betterAuth({
     database: mongodbAdapter(getNativeDb()),
 
-    plugins: [bearer()],
+    // plugins: [bearer()],
 
     appName: "Labora - An Online Job Marketplace Platform",
+
     emailAndPassword: {
       enabled: true,
     },
+    
+    baseURL: env.BETTER_AUTH_URL,
 
-    secret: BETTER_AUTH_SECRET,
-    baseURL: BETTER_AUTH_URL,
+    socialProviders: {
+      google: {
+        clientId: env.GOOGLE_CLIENT_ID,
+        clientSecret: env.GOOGLE_CLIENT_SECRET,
+      },
+    },
+
+    trustedOrigins: [env.CLIENT_URL],
 
     user: {
       additionalFields: {

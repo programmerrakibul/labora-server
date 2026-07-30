@@ -35,27 +35,43 @@ const envSchema = z.object(
 
     CLIENT_URL: z
       .string({ error: "CLIENT_URL is required" })
+      .trim()
       .min(1, { error: "CLIENT_URL cannot be empty" }),
 
     BETTER_AUTH_SECRET: z
       .string({ error: "BETTER_AUTH_SECRET is required" })
+      .trim()
       .min(1, { error: "BETTER_AUTH_SECRET cannot be empty" }),
 
     BETTER_AUTH_URL: z
       .string({ error: "BETTER_AUTH_URL is required" })
+      .trim()
       .min(1, { error: "BETTER_AUTH_URL cannot be empty" }),
 
     CLOUDINARY_CLOUD_NAME: z
       .string({ error: "CLOUDINARY_CLOUD_NAME is required" })
+      .trim()
       .min(1, { error: "CLOUDINARY_CLOUD_NAME cannot be empty" }),
 
     CLOUDINARY_API_KEY: z
       .string({ error: "CLOUDINARY_API_KEY is required" })
+      .trim()
       .min(1, { error: "CLOUDINARY_API_KEY cannot be empty" }),
 
     CLOUDINARY_API_SECRET: z
       .string({ error: "CLOUDINARY_API_SECRET is required" })
+      .trim()
       .min(1, { error: "CLOUDINARY_API_SECRET cannot be empty" }),
+
+    GOOGLE_CLIENT_ID: z
+      .string({ error: "GOOGLE_CLIENT_ID is required" })
+      .trim()
+      .min(1, { error: "GOOGLE_CLIENT_ID cannot be empty" }),
+
+    GOOGLE_CLIENT_SECRET: z
+      .string({ error: "GOOGLE_CLIENT_SECRET is required" })
+      .trim()
+      .min(1, { error: "GOOGLE_CLIENT_SECRET cannot be empty" }),
   },
   {
     error: "Environment configuration is invalid. Please check your .env file.",

@@ -19,15 +19,16 @@ import userRouter from "@/user/routes/user.js";
 import { sendSuccessResponse } from "@/utils/sendResponse.js";
 
 const app = express();
-const { PORT, CLIENT_URL, BETTER_AUTH_URL } = getEnv();
+const { PORT, CLIENT_URL } = getEnv();
 const API_PREFIX = "/api" as const;
 
 app.use(verifyToken);
 app.use(
   cors({
-    origin: ["http://localhost:5173", CLIENT_URL, BETTER_AUTH_URL],
+    origin: [CLIENT_URL],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     credentials: true,
+    exposedHeaders: ["Set-Cookie"],
   }),
 );
 

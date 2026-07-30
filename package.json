@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node build/index.js",
     "dev": "tsx --watch src/index.ts",
-    "build": "tsc && tsc-alias"
+    "build": "rm -rf build && tsc && tsc-alias"
   },
   "keywords": [],
   "author": "",
