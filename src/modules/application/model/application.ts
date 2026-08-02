@@ -1,6 +1,10 @@
-import type { TApplication } from "@/application/interface/application.js";
+import type {
+  TApplication,
+  TApplicationModel,
+} from "@/application/interface/application.js";
 import { APPLICATION_STATUS } from "@/application/validation/application.js";
-import { model, Schema, type PaginateModel } from "mongoose";
+import { model, Schema } from "mongoose";
+import aggregatePaginate from "mongoose-aggregate-paginate-v2";
 import paginate from "mongoose-paginate-v2";
 
 const schema = new Schema<TApplication>(
@@ -60,8 +64,9 @@ schema.index({ jobId: 1, status: 1, createdAt: -1 });
 schema.index({ applicantId: 1, createdAt: -1 });
 
 schema.plugin(paginate);
+schema.plugin(aggregatePaginate);
 
-const Application = model<TApplication, PaginateModel<TApplication>>(
+const Application = model<TApplication, TApplicationModel>(
   "Application",
   schema,
 );

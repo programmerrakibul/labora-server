@@ -50,45 +50,81 @@ const getApplications = async (
   const validatedQuery = parseOrThrow(ApplicationQuerySchema, query);
   const id = transformToObjectId(userId);
 
-  const filter: Record<string, unknown> = {};
-
-  if (role === Role.JOB_SEEKER) {
-    filter.applicantId = id;
-  } else if (role === Role.RECRUITER) {
-    filter.$expr = {
-      $eq: ["$jobId.postedBy", id],
-    };
-  }
+  const matchStage: Record<string, unknown> = {};
 
   if (validatedQuery.status) {
-    filter.status = validatedQuery.status;
+    matchStage.status = validatedQuery.status;
   }
 
   if (validatedQuery.jobId) {
-    filter.jobId = transformToObjectId(validatedQuery.jobId);
+    matchStage.jobId = transformToObjectId(validatedQuery.jobId);
   }
 
-  const sort: Record<string, 1 | -1> = {};
-  const sortBy = validatedQuery.sortBy || "createdAt";
+  if (role === Role.JOB_SEEKER) {
+    matchStage.applicantId = id;
+  }
+
+  const pipeline: any[] = [
+    { $match: matchStage },
+    {
+      $lookup: {
+        from: "job",
+        localField: "jobId",
+        foreignField: "_id",
+        as: "jobId",
+      },
+    },
+    { $unwind: "$jobId" },
+  ];
+
+  if (role === Role.RECRUITER) {
+    pipeline.push({
+      $match: { "jobId.postedBy": id },
+    });
+  }
+
+  pipeline.push(
+    {
+      $lookup: {
+        from: "user",
+        localField: "applicantId",
+        foreignField: "_id",
+        as: "applicantId",
+      },
+    },
+    { $unwind: "$applicantId" },
+    {
+      $project: {
+        "applicantId.name": 1,
+        "applicantId.email": 1,
+        "applicantId._id": 1,
+        "jobId.title": 1,
+        "jobId.company": 1,
+        "jobId._id": 1,
+        status: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        resumeUrl: 1,
+        coverLetter: 1,
+        expectedSalary: 1,
+      },
+    },
+  );
+
+  const sortField = validatedQuery.sortBy || "createdAt";
   const sortOrder = validatedQuery.sortOrder === "asc" ? 1 : -1;
-  sort[sortBy] = sortOrder;
 
-  const page = validatedQuery.page || 1;
-  const limit = validatedQuery.limit || 10;
+  const options = {
+    page: validatedQuery.page || 1,
+    limit: validatedQuery.limit || 10,
+    sort: { [sortField]: sortOrder },
+  };
 
-  const applications = await Application.paginate(filter, {
-    sort,
-    page,
-    limit,
-    populate: [
-      { path: "jobId", select: "title company" },
-      { path: "applicantId", select: "name email image" },
-    ],
-  });
+  const aggregate = Application.aggregate(pipeline);
+  const applications = await Application.aggregatePaginate(aggregate, options);
 
   return getPaginateData<TApplication>(applications);
 };
-
 const getApplicationById = async (id: string) => {
   if (!validateObjectId(id)) {
     throw new BadRequestError("Invalid application ID.");

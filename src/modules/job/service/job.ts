@@ -159,8 +159,8 @@ const updateJob = async (id: string, data: unknown, userId: string) => {
   if (!job) throw new NotFoundError("Job not found.");
 
   const updatedJob = await Job.findByIdAndUpdate(id, validatedData, {
-    new: true,
     runValidators: true,
+    returnDocument: "after",
   })
     .populate("postedBy", "name email image")
     .lean()
