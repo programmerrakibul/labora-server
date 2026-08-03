@@ -38,7 +38,14 @@ const getJobs = async (query: unknown) => {
   const filter: Record<string, unknown> = { status: JOB_STATUS.ACTIVE };
 
   if (validatedQuery.search) {
-    filter.$text = { $search: validatedQuery.search };
+    filter.$or = [
+      { title: { $regex: validatedQuery.search, $options: "i" } },
+      { description: { $regex: validatedQuery.search, $options: "i" } },
+      { company: { $regex: validatedQuery.search, $options: "i" } },
+      { skills: { $regex: validatedQuery.search, $options: "i" } },
+      { category: { $regex: validatedQuery.search, $options: "i" } },
+      { tags: { $regex: validatedQuery.search, $options: "i" } },
+    ];
   }
 
   if (validatedQuery.category) {

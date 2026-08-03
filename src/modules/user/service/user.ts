@@ -2,6 +2,7 @@ import type { TUser } from "@/user/interface/user.js";
 import User from "@/user/model/user.js";
 import {
   UpdateProfileSchema,
+  UpdateUserRoleSchema,
   UpdateUserStatusSchema,
   UserQuerySchema,
 } from "@/user/validation/user.js";
@@ -89,12 +90,29 @@ const updateUserStatus = async (id: string, data: unknown) => {
   const updatedUser = await User.findByIdAndUpdate(
     id,
     { isActive: validatedData.isActive },
-    { new: true, runValidators: true },
+    { runValidators: true, returnDocument: "after" },
   )
     .lean()
     .exec();
 
   return updatedUser;
+};
+
+const updateUserRole = async (id: string, payload: unknown) => {
+  if (!validateObjectId(id)) {
+    throw new BadRequestError("Invalid user ID.");
+  }
+
+  const { role } = parseOrThrow(UpdateUserRoleSchema, payload);
+
+  const user = await User.findById(id);
+
+  if (!user) throw new NotFoundError("User not found.");
+
+  user.role = role;
+  await user.save();
+
+  return user;
 };
 
 const deleteUser = async (id: string) => {
@@ -116,6 +134,7 @@ const services = {
   getUserById,
   updateProfile,
   updateUserStatus,
+  updateUserRole,
   deleteUser,
 };
 

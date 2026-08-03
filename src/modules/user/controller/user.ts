@@ -30,11 +30,23 @@ const updateProfile = async (req: Request, res: Response) => {
   });
 };
 
-const updateUserStatus = async (req: Request<{ id: string }>, res: Response) => {
+const updateUserStatus = async (
+  req: Request<{ id: string }>,
+  res: Response,
+) => {
   const result = await services.updateUserStatus(req.params.id, req.body);
 
   sendSuccessResponse(res, status.OK, {
     message: "User status updated successfully",
+    data: result,
+  });
+};
+
+const updateUserRole = async (req: Request<{ id: string }>, res: Response) => {
+  const result = await services.updateUserRole(req.params.id, req.body);
+
+  sendSuccessResponse(res, status.OK, {
+    message: "User role updated successfully",
     data: result,
   });
 };
@@ -52,6 +64,7 @@ const controllers = {
   getUserById,
   updateProfile,
   updateUserStatus,
+  updateUserRole,
   deleteUser,
 };
 
