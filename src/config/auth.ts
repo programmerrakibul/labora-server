@@ -34,15 +34,19 @@ export const initAuth = () => {
     databaseHooks: {
       user: {
         create: {
-          before: async (user, _ctx) => {
-            const additionalData = await getOAuthState();
+          before: async (user, ctx) => {
+            if (ctx?.path === "/callback/:id") {
+              const additionalData = await getOAuthState();
 
-            return {
-              data: {
-                ...user,
-                role: additionalData?.role || Role.JOB_SEEKER,
-              },
-            };
+              return {
+                data: {
+                  ...user,
+                  role: additionalData?.role || Role.JOB_SEEKER,
+                },
+              };
+            }
+
+            return { data: user };
           },
         },
       },
