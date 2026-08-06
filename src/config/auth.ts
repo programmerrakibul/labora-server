@@ -30,6 +30,15 @@ export const initAuth = () => {
     },
 
     trustedOrigins: [env.CLIENT_URL],
+    advanced: {
+      useSecureCookies: true,
+      defaultCookieAttributes: {
+        sameSite: "none",
+        secure: true,
+        httpOnly: true,
+        partitioned: true,
+      },
+    },
 
     databaseHooks: {
       user: {
