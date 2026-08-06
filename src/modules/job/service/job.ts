@@ -38,7 +38,14 @@ const getJobs = async (query: unknown) => {
   const filter: Record<string, unknown> = { status: JOB_STATUS.ACTIVE };
 
   if (validatedQuery.search) {
-    filter.$text = { $search: validatedQuery.search };
+    filter.$or = [
+      { title: { $regex: validatedQuery.search, $options: "i" } },
+      { description: { $regex: validatedQuery.search, $options: "i" } },
+      { company: { $regex: validatedQuery.search, $options: "i" } },
+      { skills: { $regex: validatedQuery.search, $options: "i" } },
+      { category: { $regex: validatedQuery.search, $options: "i" } },
+      { tags: { $regex: validatedQuery.search, $options: "i" } },
+    ];
   }
 
   if (validatedQuery.category) {
@@ -159,8 +166,8 @@ const updateJob = async (id: string, data: unknown, userId: string) => {
   if (!job) throw new NotFoundError("Job not found.");
 
   const updatedJob = await Job.findByIdAndUpdate(id, validatedData, {
-    new: true,
     runValidators: true,
+    returnDocument: "after",
   })
     .populate("postedBy", "name email image")
     .lean()
