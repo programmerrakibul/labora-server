@@ -1,26 +1,19 @@
-import { toNodeHandler } from "better-auth/node";
 import cors from "cors";
-import express, { type Request, type Response } from "express";
-import status from "http-status";
-
 import dns from "dns";
-dns.setServers(["8.8.8.8", "8.8.4.4", "0.0.0.0"]);
+import express from "express";
 
-import applicationRouter from "@/application/routes/application.js";
-import { initAuth } from "@/config/auth.js";
 import { connectDB } from "@/config/db.js";
-import { getEnv } from "@/config/env.js";
-import dashboardRouter from "@/dashboard/routes/dashboard.js";
-import jobRouter from "@/job/routes/job.js";
+import { getEnv, NODE_ENV } from "@/config/env.js";
 import { globalErrorHandler } from "@/middlewares/global-error-handler.js";
 import { verifyToken } from "@/middlewares/verify-token.js";
-import assetRouter from "@/upload/routes/upload.js";
-import userRouter from "@/user/routes/user.js";
-import { sendSuccessResponse } from "@/utils/sendResponse.js";
+import mountedRoutes from "./mounted-routes.js";
 
+const { PORT, CLIENT_URL, ...env } = getEnv();
 const app = express();
-const { PORT, CLIENT_URL } = getEnv();
-const API_PREFIX = "/api" as const;
+
+if (env.NODE_ENV !== NODE_ENV.PRODUCTION) {
+  dns.setServers(["8.8.8.8", "8.8.4.4", "0.0.0.0"]);
+}
 
 app.use(verifyToken);
 app.use(
@@ -32,44 +25,24 @@ app.use(
   }),
 );
 
-const startServer = async () => {
-  const db = await connectDB();
-  const auth = initAuth();
+let db: Awaited<ReturnType<typeof connectDB>> | null = null;
 
-  try {
-    app.all(`${API_PREFIX}/auth/*splat`, toNodeHandler(auth));
+try {
+  db = await connectDB();
 
-    app.use(express.json());
+  mountedRoutes(app);
 
-    app.get("/", (_req: Request, res: Response) => {
-      sendSuccessResponse(res, status.OK, { message: "Server is running" });
-    });
+  app.use(globalErrorHandler);
 
-    app.use(`${API_PREFIX}/users`, userRouter);
-    app.use(`${API_PREFIX}/jobs`, jobRouter);
-    app.use(`${API_PREFIX}/applications`, applicationRouter);
-    app.use(`${API_PREFIX}/assets`, assetRouter);
-    app.use(`${API_PREFIX}/dashboard`, dashboardRouter);
+  app.listen(PORT, () => {
+    console.log("Server running in port:", PORT);
+  });
+} catch (error: unknown) {
+  console.error("Error starting the server: ", error);
 
-    app.use((_req: Request, res: Response) => {
-      res.status(status.NOT_FOUND).send({
-        success: false,
-        message: "Route not found",
-      });
-    });
+  if (db) db.disconnect();
 
-    app.use(globalErrorHandler);
-  } catch (error: unknown) {
-    console.error(error);
+  process.exit(1);
+}
 
-    if (db) db.disconnect();
-
-    process.exit(1);
-  }
-};
-
-app.listen(PORT, () => {
-  console.log("Server running in port:", PORT);
-});
-
-startServer();
+export default app;
