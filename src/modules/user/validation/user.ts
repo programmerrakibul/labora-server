@@ -2,7 +2,7 @@ import { z } from "zod";
 import { Role } from "../interface/user.js";
 
 export const RoleEnum = z.enum(Object.values(Role), {
-  error: "Role must be one of: JOB_SEEKER, RECRUITER, ADMIN",
+  error: "Role must be one of: JOB_SEEKER, COMPANY_MEMBER, COMPANY_OWNER, ADMIN",
 });
 
 export const UpdateProfileSchema = z.object(

@@ -8,7 +8,7 @@ const router = Router();
 router.get("/admin", authorize(Role.ADMIN), controllers.getAdminStats);
 router.get(
   "/recruiter",
-  authorize(Role.RECRUITER),
+  authorize(Role.COMPANY_OWNER, Role.COMPANY_MEMBER),
   controllers.getRecruiterStats,
 );
 router.get(

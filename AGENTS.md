@@ -80,9 +80,13 @@ src/
 
 ### 5. Authorization
 
-- Protect routes with `authorize(Role.ADMIN, Role.RECRUITER)` middleware
+- Protect routes with `authorize(Role.COMPANY_OWNER, Role.COMPANY_MEMBER)`
+  middleware (or `Role.ADMIN`, `Role.JOB_SEEKER` where applicable)
 - Role checks happen AFTER authentication middleware
 - NEVER implement role checks in controllers or services
+- Ownership checks (`ownerId === req.user.id`) live in the service layer
+- `role` is NEVER accepted from client input — it is only ever set server-side
+  inside service functions (company create/approve/remove/delete)
 
 ### 6. Currency
 
@@ -124,18 +128,41 @@ src/
 
 ### user
 
-- name, email (unique), image, phoneNumber, role (JOB_SEEKER|RECRUITER|ADMIN),
-  address, city, country, emailVerified, isActive, timestamps
+- name, email (unique), image, phoneNumber, role
+  (JOB_SEEKER|COMPANY_MEMBER|COMPANY_OWNER|ADMIN), companyId (ref: Company,
+  default null), address, city, country, emailVerified, isActive, timestamps
+- Role + companyId are written together by the company service layer and never
+  from client input
+
+### company
+
+- name, logo, website, industry, about, location{city,state,country}, ownerId
+  (ref: User), maxRecruiters (default 5), recruiterCount (default 1, owner
+  counts as 1), status (ACTIVE|SUSPENDED), timestamps
+- Indexes: text (name,industry), compound (ownerId)
+
+### company_membership
+
+- companyId (ref: Company), userId (ref: User), role
+  (COMPANY_OWNER|COMPANY_MEMBER), status (PENDING|APPROVED|REJECTED|REMOVED),
+  respondedBy (ref: User), respondedAt, timestamps
+- Audit trail for every join request, approval, rejection, and removal
+- Partial unique {companyId,userId} where status=PENDING (one pending request
+  per user per company)
+- Indexes: compound (userId,status), compound (companyId,status)
 
 ### job
 
-- title, company, description, requirements[], responsibilities[], skills[],
-  jobType, workLocationType, experienceLevel, location{city,state,country},
-  salary{min,max,currency,isNegotiable}, category, tags[], status, postedBy
-  (ref: User), expiresAt, timestamps
+- title, company (server-side snapshot of Company.name), description,
+  requirements[], responsibilities[], skills[], jobType, workLocationType,
+  experienceLevel, location{city,state,country}, salary{min,max,currency,
+  isNegotiable}, category, tags[], status, companyId (ref: Company, nullable),
+  postedBy (ref: User), expiresAt, timestamps
+- `company` and `companyId` are set server-side from the caller's company —
+  never accepted from the request body
 - Indexes: text (title,description,company,skills), compound
   (status,category,createdAt), compound (status,workLocationType,jobType),
-  compound (postedBy,status), TTL (expiresAt)
+  compound (postedBy,status), compound (companyId,status), TTL (expiresAt)
 
 ### application
 
@@ -164,24 +191,47 @@ src/
 - `GET /api/users/:id` - Get single user
 - `PUT /api/users/profile` - Update own profile (authenticated)
 - `PATCH /api/users/:id/status` - Toggle user status (admin)
+- `PATCH /api/users/:id/role` - Update user role (admin)
 - `DELETE /api/users/:id` - Delete user (admin)
+
+### Companies
+
+- `GET /api/companies` - List/search companies (public, paginated)
+- `GET /api/companies/:id` - Get company profile (public)
+- `POST /api/companies` - Create company → caller becomes COMPANY_OWNER
+  (JOB_SEEKER only)
+- `PATCH /api/companies/:id` - Update company profile (COMPANY_OWNER, own)
+- `DELETE /api/companies/:id` - Delete company, resets members (COMPANY_OWNER,
+  own)
+- `POST /api/companies/:id/join` - Submit join request (JOB_SEEKER)
+- `DELETE /api/companies/:id/join` - Cancel own pending request (authenticated)
+- `GET /api/companies/:id/requests` - List pending requests (COMPANY_OWNER, own)
+- `PATCH /api/companies/:id/requests/:requestId` - Approve/reject request
+  (COMPANY_OWNER, own)
+- `GET /api/companies/:id/members` - List approved members (COMPANY_OWNER, own)
+- `DELETE /api/companies/:id/members/:userId` - Remove member, frees a seat
+  (COMPANY_OWNER, own)
+- `GET /api/companies/me/membership` - Own affiliation status (authenticated)
+- `DELETE /api/companies/me/membership` - Leave current company (COMPANY_MEMBER)
 
 ### Jobs
 
 - `GET /api/jobs` - List jobs (public, with filtering)
 - `GET /api/jobs/user` - Get jobs by authenticated user
 - `GET /api/jobs/:id` - Get single job
-- `POST /api/jobs` - Create job (RECRUITER only)
-- `PUT /api/jobs/:id` - Update job (RECRUITER, owner only)
-- `PATCH /api/jobs/:id/status` - Update job status (RECRUITER, owner only)
-- `DELETE /api/jobs/:id` - Delete job (RECRUITER, owner only)
+- `POST /api/jobs` - Create job (COMPANY_OWNER/COMPANY_MEMBER)
+- `PUT /api/jobs/:id` - Update job (COMPANY_OWNER/COMPANY_MEMBER, owner only)
+- `PATCH /api/jobs/:id/status` - Update job status
+  (COMPANY_OWNER/COMPANY_MEMBER, owner only)
+- `DELETE /api/jobs/:id` - Delete job (COMPANY_OWNER/COMPANY_MEMBER, owner only)
 
 ### Applications
 
 - `GET /api/applications` - List applications (filtered by role)
 - `GET /api/applications/:id` - Get single application
 - `POST /api/applications` - Apply to job (JOB_SEEKER only)
-- `PATCH /api/applications/:id/status` - Update status (RECRUITER/ADMIN)
+- `PATCH /api/applications/:id/status` - Update status
+  (COMPANY_OWNER/COMPANY_MEMBER/ADMIN)
 - `DELETE /api/applications/:id` - Withdraw application (JOB_SEEKER, owner only)
 
 ### Assets
@@ -229,3 +279,5 @@ src/
 - `versionKey: false` on all models
 - Use `lean()` for read-only queries
 - Use `PaginateModel` for paginated queries
+- `req.user` carries `{ id, email, role, companyId }` for authenticated requests
+  (populated by `verifyToken` from the Better Auth session)

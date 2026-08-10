@@ -2,7 +2,6 @@ import { getNativeDb } from "@/config/db.js";
 import { getEnv } from "@/config/env.js";
 import { Role } from "@/modules/user/interface/user.js";
 import { mongodbAdapter } from "@better-auth/mongo-adapter";
-import { getOAuthState } from "better-auth/api";
 import { betterAuth } from "better-auth/minimal";
 import { bearer } from "better-auth/plugins";
 
@@ -34,19 +33,8 @@ export const initAuth = () => {
     databaseHooks: {
       user: {
         create: {
-          before: async (user, ctx) => {
-            if (ctx?.path === "/callback/:id") {
-              const additionalData = await getOAuthState();
-
-              return {
-                data: {
-                  ...user,
-                  role: additionalData?.role || Role.JOB_SEEKER,
-                },
-              };
-            }
-
-            return { data: user };
+          before: async (user) => {
+            return { data: { ...user, role: Role.JOB_SEEKER } };
           },
         },
       },
@@ -55,11 +43,23 @@ export const initAuth = () => {
     user: {
       additionalFields: {
         role: {
-          type: [Role.JOB_SEEKER, Role.RECRUITER, Role.ADMIN],
+          type: [
+            Role.JOB_SEEKER,
+            Role.COMPANY_MEMBER,
+            Role.COMPANY_OWNER,
+            Role.ADMIN,
+          ],
           defaultValue: Role.JOB_SEEKER,
-          input: true,
+          input: false,
           index: true,
           required: true,
+        },
+
+        companyId: {
+          type: "string",
+          defaultValue: "",
+          required: false,
+          input: false,
         },
 
         phoneNumber: {

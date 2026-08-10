@@ -11,7 +11,7 @@ router.get("/:id", controllers.getApplicationById);
 router.post("/", authorize(Role.JOB_SEEKER), controllers.createApplication);
 router.patch(
   "/:id/status",
-  authorize(Role.RECRUITER, Role.ADMIN),
+  authorize(Role.COMPANY_OWNER, Role.COMPANY_MEMBER, Role.ADMIN),
   controllers.updateApplicationStatus,
 );
 router.delete(

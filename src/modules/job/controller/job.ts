@@ -4,7 +4,11 @@ import type { Request, Response } from "express";
 import status from "http-status";
 
 const createJob = async (req: Request, res: Response) => {
-  const result = await services.createJob(req.body, req.user!.id);
+  const result = await services.createJob(
+    req.body,
+    req.user!.id,
+    req.user!.companyId,
+  );
 
   sendSuccessResponse(res, status.CREATED, {
     message: "Job created successfully",

@@ -77,7 +77,7 @@ const getApplications = async (
     { $unwind: "$jobId" },
   ];
 
-  if (role === Role.RECRUITER) {
+  if (role === Role.COMPANY_OWNER || role === Role.COMPANY_MEMBER) {
     pipeline.push({
       $match: { "jobId.postedBy": id },
     });

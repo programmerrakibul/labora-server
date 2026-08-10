@@ -32,6 +32,7 @@ Authorization: Bearer <token>
 | GET    | `/users/:id`        | Public        | Get user               |
 | PUT    | `/users/profile`    | Authenticated | Update own profile     |
 | PATCH  | `/users/:id/status` | Admin         | Toggle active status   |
+| PATCH  | `/users/:id/role`   | Admin         | Update user role       |
 | DELETE | `/users/:id`        | Admin         | Delete user            |
 
 ### GET /users Query Parameters
@@ -65,17 +66,74 @@ Authorization: Bearer <token>
 
 ---
 
+## Companies
+
+| Method | Endpoint                             | Auth                | Description                   |
+| ------ | ------------------------------------ | ------------------- | ----------------------------- |
+| GET    | `/companies`                         | Public              | List/search companies         |
+| GET    | `/companies/:id`                     | Public              | Get company profile           |
+| POST   | `/companies`                         | Job Seeker          | Create a company              |
+| PATCH  | `/companies/:id`                     | Company Owner (own) | Update company profile        |
+| DELETE | `/companies/:id`                     | Company Owner (own) | Delete company                |
+| POST   | `/companies/:id/join`                | Job Seeker          | Submit join request           |
+| DELETE | `/companies/:id/join`                | Authenticated (own) | Cancel own pending request    |
+| GET    | `/companies/:id/requests`            | Company Owner (own) | List pending join requests    |
+| PATCH  | `/companies/:id/requests/:requestId` | Company Owner (own) | Approve/reject a join request |
+| GET    | `/companies/:id/members`             | Company Owner (own) | List approved members         |
+| DELETE | `/companies/:id/members/:userId`     | Company Owner (own) | Remove member (frees a seat)  |
+| GET    | `/companies/me/membership`           | Authenticated       | Own affiliation status        |
+| DELETE | `/companies/me/membership`           | Company Member      | Leave current company         |
+
+### GET /companies Query Parameters
+
+| Param       | Type   | Default   | Description             |
+| ----------- | ------ | --------- | ----------------------- |
+| `search`    | string | -         | Search name or industry |
+| `page`      | number | 1         | Page number             |
+| `limit`     | number | 10        | Items per page (max 50) |
+| `sortBy`    | enum   | createdAt | Sort field              |
+| `sortOrder` | enum   | desc      | Sort direction          |
+
+### POST /companies Body
+
+| Field      | Type               | Required |
+| ---------- | ------------------ | -------- |
+| `name`     | string             | Yes      |
+| `website`  | string (URL)       | No       |
+| `industry` | string             | No       |
+| `about`    | string             | No       |
+| `location` | object             | No       |
+| `logo`     | string (asset URL) | No       |
+
+`maxRecruiters`, `ownerId`, `recruiterCount`, and `status` are never accepted
+from the client — server-assigned only.
+
+### PATCH /companies/:id/requests/:requestId Body
+
+| Field    | Type | Required |
+| -------- | ---- | -------- |
+| `status` | enum | Yes      |
+
+**Values**: `APPROVED`, `REJECTED`
+
+### GET /companies/me/membership Response
+
+Returns `status`: `active`, `pending`, or `none` (with company + role when
+affiliated).
+
+---
+
 ## Jobs
 
-| Method | Endpoint           | Auth      | Description          |
-| ------ | ------------------ | --------- | -------------------- |
-| GET    | `/jobs`            | Public    | List jobs (filtered) |
-| GET    | `/jobs/user`       | Recruiter | My posted jobs       |
-| GET    | `/jobs/:id`        | Public    | Get job              |
-| POST   | `/jobs`            | Recruiter | Create job           |
-| PUT    | `/jobs/:id`        | Recruiter | Update job           |
-| PATCH  | `/jobs/:id/status` | Recruiter | Update status        |
-| DELETE | `/jobs/:id`        | Recruiter | Delete job           |
+| Method | Endpoint           | Auth                 | Description          |
+| ------ | ------------------ | -------------------- | -------------------- |
+| GET    | `/jobs`            | Public               | List jobs (filtered) |
+| GET    | `/jobs/user`       | Company Owner/Member | My posted jobs       |
+| GET    | `/jobs/:id`        | Public               | Get job              |
+| POST   | `/jobs`            | Company Owner/Member | Create job           |
+| PUT    | `/jobs/:id`        | Company Owner/Member | Update job           |
+| PATCH  | `/jobs/:id/status` | Company Owner/Member | Update status        |
+| DELETE | `/jobs/:id`        | Company Owner/Member | Delete job           |
 
 ### GET /jobs Query Parameters
 
@@ -99,7 +157,6 @@ Authorization: Bearer <token>
 | Field              | Type     | Required | Description                                                   |
 | ------------------ | -------- | -------- | ------------------------------------------------------------- |
 | `title`            | string   | Yes      | Job title (max 100)                                           |
-| `company`          | string   | Yes      | Company name                                                  |
 | `description`      | string   | Yes      | Job description                                               |
 | `requirements`     | string[] | No       | Requirements list                                             |
 | `responsibilities` | string[] | No       | Responsibilities list                                         |
@@ -114,6 +171,9 @@ Authorization: Bearer <token>
 | `status`           | enum     | No       | DRAFT, ACTIVE, PAUSED, CLOSED                                 |
 | `expiresAt`        | date     | No       | Expiry date                                                   |
 
+`company` and `companyId` are NOT accepted from the client — they are stamped
+server-side from the caller's affiliated company.
+
 ### PATCH /jobs/:id/status Body
 
 | Field    | Type | Required |
@@ -124,13 +184,13 @@ Authorization: Bearer <token>
 
 ## Applications
 
-| Method | Endpoint                   | Auth            | Description       |
-| ------ | -------------------------- | --------------- | ----------------- |
-| GET    | `/applications`            | Role-based      | List applications |
-| GET    | `/applications/:id`        | Authenticated   | Get application   |
-| POST   | `/applications`            | Job Seeker      | Apply to job      |
-| PATCH  | `/applications/:id/status` | Recruiter/Admin | Update status     |
-| DELETE | `/applications/:id`        | Job Seeker      | Withdraw          |
+| Method | Endpoint                   | Auth                       | Description       |
+| ------ | -------------------------- | -------------------------- | ----------------- |
+| GET    | `/applications`            | Role-based                 | List applications |
+| GET    | `/applications/:id`        | Authenticated              | Get application   |
+| POST   | `/applications`            | Job Seeker                 | Apply to job      |
+| PATCH  | `/applications/:id/status` | Company Owner/Member/Admin | Update status     |
+| DELETE | `/applications/:id`        | Job Seeker                 | Withdraw          |
 
 ### GET /applications Query Parameters
 
@@ -188,11 +248,11 @@ Content-Type: `multipart/form-data`
 
 ## Dashboard
 
-| Method | Endpoint                | Auth       | Description      |
-| ------ | ----------------------- | ---------- | ---------------- |
-| GET    | `/dashboard/admin`      | Admin      | Admin stats      |
-| GET    | `/dashboard/recruiter`  | Recruiter  | Recruiter stats  |
-| GET    | `/dashboard/job-seeker` | Job Seeker | Job seeker stats |
+| Method | Endpoint                | Auth                 | Description      |
+| ------ | ----------------------- | -------------------- | ---------------- |
+| GET    | `/dashboard/admin`      | Admin                | Admin stats      |
+| GET    | `/dashboard/recruiter`  | Company Owner/Member | Recruiter stats  |
+| GET    | `/dashboard/job-seeker` | Job Seeker           | Job seeker stats |
 
 Returns overview counts, last 30 days activity, and breakdown by status/role.
 
@@ -223,7 +283,15 @@ Returns overview counts, last 30 days activity, and breakdown by status/role.
 
 ### User Roles
 
-`JOB_SEEKER`, `RECRUITER`, `ADMIN`
+`JOB_SEEKER`, `COMPANY_MEMBER`, `COMPANY_OWNER`, `ADMIN`
+
+### Company Statuses
+
+`ACTIVE`, `SUSPENDED`
+
+### Membership Statuses
+
+`PENDING`, `APPROVED`, `REJECTED`, `REMOVED`
 
 ### Currencies
 
