@@ -1,9 +1,10 @@
 import { getNativeDb } from "@/config/db.js";
 import { getEnv } from "@/config/env.js";
 import { Role } from "@/modules/user/interface/user.js";
+import { toObjectIdString } from "@/utils/utils.js";
 import { mongodbAdapter } from "@better-auth/mongo-adapter";
 import { betterAuth } from "better-auth/minimal";
-import { bearer } from "better-auth/plugins";
+import { bearer, customSession } from "better-auth/plugins";
 
 const env = getEnv();
 
@@ -11,7 +12,18 @@ export const initAuth = () => {
   return betterAuth({
     database: mongodbAdapter(getNativeDb()),
 
-    plugins: [bearer()],
+    plugins: [
+      bearer(),
+      customSession(async ({ user, session }) => {
+        return {
+          user: {
+            ...user,
+            companyId: toObjectIdString((user as any).companyId),
+          },
+          session,
+        };
+      }),
+    ],
 
     appName: "Labora - An Online Job Marketplace Platform",
 
@@ -30,25 +42,10 @@ export const initAuth = () => {
 
     trustedOrigins: [env.CLIENT_URL],
 
-    databaseHooks: {
-      user: {
-        create: {
-          before: async (user) => {
-            return { data: { ...user, role: Role.JOB_SEEKER } };
-          },
-        },
-      },
-    },
-
     user: {
       additionalFields: {
         role: {
-          type: [
-            Role.JOB_SEEKER,
-            Role.COMPANY_MEMBER,
-            Role.COMPANY_OWNER,
-            Role.ADMIN,
-          ],
+          type: "string",
           defaultValue: Role.JOB_SEEKER,
           input: false,
           index: true,
@@ -57,7 +54,6 @@ export const initAuth = () => {
 
         companyId: {
           type: "string",
-          defaultValue: "",
           required: false,
           input: false,
         },
