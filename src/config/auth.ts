@@ -18,7 +18,8 @@ export const initAuth = () => {
         return {
           user: {
             ...user,
-            companyId: toObjectIdString((user as any).companyId),
+            role: (user as { role?: Role }).role ?? Role.JOB_SEEKER,
+            companyId: toObjectIdString((user as { companyId?: string | null }).companyId),
           },
           session,
         };
@@ -56,6 +57,8 @@ export const initAuth = () => {
           type: "string",
           required: false,
           input: false,
+          index: true,
+          defaultValue: null,
         },
 
         phoneNumber: {
@@ -97,3 +100,5 @@ export const initAuth = () => {
     },
   });
 };
+
+

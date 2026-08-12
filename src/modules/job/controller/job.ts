@@ -1,16 +1,12 @@
 import services from "@/job/service/job.js";
 import { sendSuccessResponse } from "@/utils/sendResponse.js";
 import type { Request, Response } from "express";
-import status from "http-status";
+import { CREATED, OK } from "http-errors-enhanced";
 
 const createJob = async (req: Request, res: Response) => {
-  const result = await services.createJob(
-    req.body,
-    req.user!.id,
-    req.user!.companyId,
-  );
+  const result = await services.createJob(req.body, req.user!);
 
-  sendSuccessResponse(res, status.CREATED, {
+  sendSuccessResponse(res, CREATED, {
     message: "Job created successfully",
     data: result,
   });
@@ -19,7 +15,7 @@ const createJob = async (req: Request, res: Response) => {
 const getJobs = async (req: Request, res: Response) => {
   const result = await services.getJobs(req.query);
 
-  sendSuccessResponse(res, status.OK, {
+  sendSuccessResponse(res, OK, {
     message: "Jobs retrieved successfully",
     ...result,
   });
@@ -28,7 +24,7 @@ const getJobs = async (req: Request, res: Response) => {
 const getJobsByUser = async (req: Request, res: Response) => {
   const result = await services.getJobsByUser(req.user!.id, req.query);
 
-  sendSuccessResponse(res, status.OK, {
+  sendSuccessResponse(res, OK, {
     message: "User jobs retrieved successfully",
     ...result,
   });
@@ -37,7 +33,7 @@ const getJobsByUser = async (req: Request, res: Response) => {
 const getJobById = async (req: Request<{ id: string }>, res: Response) => {
   const result = await services.getJobById(req.params.id);
 
-  sendSuccessResponse(res, status.OK, {
+  sendSuccessResponse(res, OK, {
     message: "Job retrieved successfully",
     data: result,
   });
@@ -50,7 +46,7 @@ const updateJob = async (req: Request<{ id: string }>, res: Response) => {
     req.user!.id,
   );
 
-  sendSuccessResponse(res, status.OK, {
+  sendSuccessResponse(res, OK, {
     message: "Job updated successfully",
     data: result,
   });
@@ -59,7 +55,7 @@ const updateJob = async (req: Request<{ id: string }>, res: Response) => {
 const deleteJob = async (req: Request<{ id: string }>, res: Response) => {
   const result = await services.deleteJob(req.params.id, req.user!.id);
 
-  sendSuccessResponse(res, status.OK, {
+  sendSuccessResponse(res, OK, {
     message: result.message,
   });
 };
@@ -71,7 +67,7 @@ const updateJobStatus = async (req: Request<{ id: string }>, res: Response) => {
     req.user!.id,
   );
 
-  sendSuccessResponse(res, status.OK, {
+  sendSuccessResponse(res, OK, {
     message: "Job status updated successfully",
     data: result,
   });

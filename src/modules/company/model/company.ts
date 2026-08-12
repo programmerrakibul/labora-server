@@ -9,6 +9,7 @@ const schema = new Schema<TCompany>(
       type: String,
       required: true,
       trim: true,
+      index: true,
     },
 
     logo: {
@@ -65,7 +66,7 @@ const schema = new Schema<TCompany>(
       default: COMPANY_STATUS.ACTIVE,
     },
   },
-  
+
   {
     timestamps: true,
     versionKey: false,

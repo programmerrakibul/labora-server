@@ -1,5 +1,5 @@
-import type { TJob } from "@/job/interface/job.js";
 import Company from "@/company/model/company.js";
+import type { TJob } from "@/job/interface/job.js";
 import Job from "@/job/model/job.js";
 import {
   CreateJobSchema,
@@ -8,6 +8,7 @@ import {
   UpdateJobSchema,
   UpdateJobStatusSchema,
 } from "@/job/validation/job.js";
+import type { TTokenUser } from "@/user/interface/user.js";
 import { getPaginateData } from "@/utils/getPaginateData.js";
 import {
   double,
@@ -17,12 +18,9 @@ import {
 } from "@/utils/utils.js";
 import { BadRequestError, NotFoundError } from "http-errors-enhanced";
 
-const createJob = async (
-  data: unknown,
-  postedById: string,
-  companyId: string | null,
-) => {
+const createJob = async (data: unknown, user: TTokenUser) => {
   const validatedData = parseOrThrow(CreateJobSchema, data);
+  const companyId = user.companyId;
 
   if (validatedData.salary) {
     validatedData.salary.min = double(validatedData.salary.min);
@@ -35,7 +33,10 @@ const createJob = async (
     );
   }
 
-  const company = await Company.findById(companyId).select("name").lean().exec();
+  const company = await Company.findById(companyId)
+    .select("name")
+    .lean()
+    .exec();
 
   if (!company) {
     throw new BadRequestError("Affiliated company not found.");
@@ -44,8 +45,8 @@ const createJob = async (
   const job = await Job.create({
     ...validatedData,
     company: company.name,
-    companyId: transformToObjectId(companyId),
-    postedBy: transformToObjectId(postedById),
+    companyId,
+    postedBy: user.id,
   });
 
   return job;
