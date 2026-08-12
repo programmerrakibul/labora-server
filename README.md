@@ -47,11 +47,31 @@ src/
 ├── utils/               # Shared utilities
 └── modules/
     ├── user/            # User management
+    ├── company/         # Company + owner-approved membership
     ├── job/             # Job postings
     ├── application/     # Job applications
     ├── upload/          # File uploads (Cloudinary)
     └── dashboard/       # Role-based stats
 ```
+
+## Roles
+
+Every account starts as `JOB_SEEKER`. Roles only change server-side as a side
+effect of verified company actions:
+
+- `JOB_SEEKER` — default; browses/applies to jobs
+- `COMPANY_OWNER` — created a company; manages profile, members, and jobs
+- `COMPANY_MEMBER` — approved by an owner; posts/manages jobs
+- `ADMIN` — platform moderation
+
+`role` is never accepted from client input, and each user holds at most one
+company affiliation at a time.
+
+## Endpoints
+
+See [endpoints.md](./endpoints.md) for the full API reference, including the
+`/api/companies` module (create company, join requests, approvals, members,
+leave/delete).
 
 ## Environment Variables
 

@@ -6,16 +6,32 @@ import { Router } from "express";
 const router = Router();
 
 router.get("/", controllers.getJobs);
-router.get("/user", authorize(Role.RECRUITER), controllers.getJobsByUser);
+router.get(
+  "/user",
+  authorize(Role.COMPANY_OWNER, Role.COMPANY_MEMBER),
+  controllers.getJobsByUser,
+);
 router.get("/:id", controllers.getJobById);
 
-router.post("/", authorize(Role.RECRUITER), controllers.createJob);
-router.put("/:id", authorize(Role.RECRUITER), controllers.updateJob);
+router.post(
+  "/",
+  authorize(Role.COMPANY_OWNER, Role.COMPANY_MEMBER),
+  controllers.createJob,
+);
+router.put(
+  "/:id",
+  authorize(Role.COMPANY_OWNER, Role.COMPANY_MEMBER),
+  controllers.updateJob,
+);
 router.patch(
   "/:id/status",
-  authorize(Role.RECRUITER),
+  authorize(Role.COMPANY_OWNER, Role.COMPANY_MEMBER),
   controllers.updateJobStatus,
 );
-router.delete("/:id", authorize(Role.RECRUITER), controllers.deleteJob);
+router.delete(
+  "/:id",
+  authorize(Role.COMPANY_OWNER, Role.COMPANY_MEMBER),
+  controllers.deleteJob,
+);
 
 export default router;

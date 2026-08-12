@@ -27,3 +27,13 @@ export const transformToObjectId = (id: string) => {
 
   return new Types.ObjectId(id);
 };
+
+export const toObjectIdString = (value: unknown): string | null => {
+  if (!value) return null;
+  if (typeof value === "string") return value; // already fine
+  const buf = (value as any).buffer;
+  if (!buf) return null;
+  return new Types.ObjectId(
+    Buffer.from(Object.values(buf) as number[]),
+  ).toHexString();
+};

@@ -97,6 +97,12 @@ const schema = new Schema<TJob>(
       default: JOB_STATUS.ACTIVE,
     },
 
+    companyId: {
+      type: Schema.Types.ObjectId,
+      ref: "Company",
+      default: null,
+    },
+
     postedBy: {
       type: Schema.Types.ObjectId,
       ref: "User",
@@ -133,6 +139,8 @@ schema.index({ status: 1, category: 1, createdAt: -1 });
 schema.index({ status: 1, workLocationType: 1, jobType: 1 });
 
 schema.index({ postedBy: 1, status: 1 });
+
+schema.index({ companyId: 1, status: 1 });
 
 schema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 

@@ -96,10 +96,6 @@ export const CreateJobSchema = z.object(
       .trim()
       .min(1, { error: "Job title cannot be empty" })
       .max(100, { error: "Job title cannot exceed 100 characters" }),
-    company: z
-      .string({ error: "Company name is required" })
-      .trim()
-      .min(1, { error: "Company name cannot be empty" }),
     description: z
       .string({ error: "Job description is required" })
       .trim()

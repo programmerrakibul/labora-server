@@ -1,3 +1,4 @@
+import Company from "@/company/model/company.js";
 import type { TJob } from "@/job/interface/job.js";
 import Job from "@/job/model/job.js";
 import {
@@ -7,6 +8,7 @@ import {
   UpdateJobSchema,
   UpdateJobStatusSchema,
 } from "@/job/validation/job.js";
+import type { TTokenUser } from "@/user/interface/user.js";
 import { getPaginateData } from "@/utils/getPaginateData.js";
 import {
   double,
@@ -16,17 +18,35 @@ import {
 } from "@/utils/utils.js";
 import { BadRequestError, NotFoundError } from "http-errors-enhanced";
 
-const createJob = async (data: unknown, postedById: string) => {
+const createJob = async (data: unknown, user: TTokenUser) => {
   const validatedData = parseOrThrow(CreateJobSchema, data);
+  const companyId = user.companyId;
 
   if (validatedData.salary) {
     validatedData.salary.min = double(validatedData.salary.min);
     validatedData.salary.max = double(validatedData.salary.max);
   }
 
+  if (!companyId) {
+    throw new BadRequestError(
+      "You must be affiliated with a company to post a job.",
+    );
+  }
+
+  const company = await Company.findById(companyId)
+    .select("name")
+    .lean()
+    .exec();
+
+  if (!company) {
+    throw new BadRequestError("Affiliated company not found.");
+  }
+
   const job = await Job.create({
     ...validatedData,
-    postedBy: transformToObjectId(postedById),
+    company: company.name,
+    companyId,
+    postedBy: user.id,
   });
 
   return job;

@@ -43,6 +43,13 @@ const schema = new Schema<TUser>(
       toUpperCase: true,
     },
 
+    companyId: {
+      type: Schema.Types.ObjectId,
+      ref: "Company",
+      default: null,
+      index: true,
+    },
+
     address: {
       type: String,
       trim: true,

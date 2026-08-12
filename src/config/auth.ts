@@ -1,10 +1,10 @@
 import { getNativeDb } from "@/config/db.js";
 import { getEnv } from "@/config/env.js";
 import { Role } from "@/modules/user/interface/user.js";
+import { toObjectIdString } from "@/utils/utils.js";
 import { mongodbAdapter } from "@better-auth/mongo-adapter";
-import { getOAuthState } from "better-auth/api";
 import { betterAuth } from "better-auth/minimal";
-import { bearer } from "better-auth/plugins";
+import { bearer, customSession } from "better-auth/plugins";
 
 const env = getEnv();
 
@@ -12,7 +12,19 @@ export const initAuth = () => {
   return betterAuth({
     database: mongodbAdapter(getNativeDb()),
 
-    plugins: [bearer()],
+    plugins: [
+      bearer(),
+      customSession(async ({ user, session }) => {
+        return {
+          user: {
+            ...user,
+            role: (user as { role?: Role }).role ?? Role.JOB_SEEKER,
+            companyId: toObjectIdString((user as { companyId?: string | null }).companyId),
+          },
+          session,
+        };
+      }),
+    ],
 
     appName: "Labora - An Online Job Marketplace Platform",
 
@@ -31,35 +43,22 @@ export const initAuth = () => {
 
     trustedOrigins: [env.CLIENT_URL],
 
-    databaseHooks: {
-      user: {
-        create: {
-          before: async (user, ctx) => {
-            if (ctx?.path === "/callback/:id") {
-              const additionalData = await getOAuthState();
-
-              return {
-                data: {
-                  ...user,
-                  role: additionalData?.role || Role.JOB_SEEKER,
-                },
-              };
-            }
-
-            return { data: user };
-          },
-        },
-      },
-    },
-
     user: {
       additionalFields: {
         role: {
-          type: [Role.JOB_SEEKER, Role.RECRUITER, Role.ADMIN],
+          type: "string",
           defaultValue: Role.JOB_SEEKER,
-          input: true,
+          input: false,
           index: true,
           required: true,
+        },
+
+        companyId: {
+          type: "string",
+          required: false,
+          input: false,
+          index: true,
+          defaultValue: null,
         },
 
         phoneNumber: {
@@ -101,3 +100,5 @@ export const initAuth = () => {
     },
   });
 };
+
+

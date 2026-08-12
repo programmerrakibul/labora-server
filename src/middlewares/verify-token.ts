@@ -16,6 +16,7 @@ export const verifyToken = async (
       id: session.user.id,
       email: session.user.email,
       role: session.user.role as Role,
+      companyId: session.user.companyId || null,
     };
   }
 
