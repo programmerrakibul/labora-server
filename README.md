@@ -43,7 +43,7 @@ pnpm start
 src/
 ├── config/              # Auth, DB, Env
 ├── middlewares/          # Auth, error handling
-├── types/               # TypeScript augmentations
+├── types/               # Shared types & augmentations
 ├── utils/               # Shared utilities
 └── modules/
     ├── user/            # User management

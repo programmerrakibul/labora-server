@@ -36,7 +36,7 @@ src/
 ├── index.ts                    # App entry point, route mounting, middleware
 ├── config/                     # Auth, DB, Env configuration
 ├── middlewares/                 # authorize, verify-token, global-error-handler
-├── types/                      # Express type augmentation (req.user)
+├── types/                      # Shared types (Prettify) + Express type augmentation (req.user)
 ├── utils/                      # Shared utilities (response, pagination, ObjectId, currency)
 └── modules/
     └── <domain>/
@@ -136,10 +136,13 @@ src/
 
 ### company
 
-- name, logo, website, industry, about, location{city,state,country}, ownerId
-  (ref: User), maxRecruiters (default 5), recruiterCount (default 1, owner
-  counts as 1), status (ACTIVE|SUSPENDED), timestamps
-- Indexes: text (name,industry), compound (ownerId)
+- name, email (required, unique, lowercased), logo, website, industry, about,
+  location{city,state,country}, ownerId (ref: User), maxRecruiters (default 5),
+  recruiterCount (default 1, owner counts as 1), status (ACTIVE|SUSPENDED),
+  isVerified (Boolean, default false), timestamps
+- `email` is validated/lowercased via `CreateCompanySchema` and never accepted
+  from client on update unless provided via `UpdateCompanySchema`
+- Indexes: text (name,industry), unique (email), compound (ownerId), (isVerified)
 
 ### company_membership
 
@@ -191,18 +194,22 @@ src/
 - `GET /api/users/:id` - Get single user
 - `PUT /api/users/profile` - Update own profile (authenticated)
 - `PATCH /api/users/:id/status` - Toggle user status (admin)
-- `PATCH /api/users/:id/role` - Update user role (admin)
+- `PATCH /api/users/:id/role` - Update user role (admin; clears companyId when
+  role is ADMIN or JOB_SEEKER)
 - `DELETE /api/users/:id` - Delete user (admin)
 
 ### Companies
 
-- `GET /api/companies` - List/search companies (public, paginated)
+- `GET /api/companies` - List/search companies (public, paginated; search
+  matches name/email/industry; `isAdmin=true` + ADMIN returns all incl.
+  SUSPENDED)
 - `GET /api/companies/:id` - Get company profile (public)
 - `POST /api/companies` - Create company → caller becomes COMPANY_OWNER
   (JOB_SEEKER only)
-- `PATCH /api/companies/:id` - Update company profile (COMPANY_OWNER, own)
+- `PUT /api/companies/:id` - Update company profile (COMPANY_OWNER, own)
+- `PATCH /api/companies/:id/status` - Suspend/activate company (ADMIN only)
 - `DELETE /api/companies/:id` - Delete company, resets members (COMPANY_OWNER,
-  own)
+  own / ADMIN bypasses ownership)
 - `POST /api/companies/:id/join` - Submit join request (JOB_SEEKER)
 - `DELETE /api/companies/:id/join` - Cancel own pending request (authenticated)
 - `GET /api/companies/:id/requests` - List pending requests (COMPANY_OWNER, own)

@@ -72,6 +72,13 @@ export const CreateCompanySchema = z.object(
 
 export const UpdateCompanySchema = CreateCompanySchema.partial();
 
+export const UpdateCompanyStatusSchema = z.object(
+  {
+    status: CompanyStatusEnum,
+  },
+  { error: "Status update must include a valid status field" },
+);
+
 export const RespondToRequestSchema = z.object(
   {
     status: z.enum(["APPROVED", "REJECTED"], {
@@ -84,27 +91,37 @@ export const RespondToRequestSchema = z.object(
 export const CompanyQuerySchema = z.object(
   {
     search: z.string({ error: "Search must be a string" }).optional(),
+
     page: z.coerce
       .number({ error: "Page must be a number" })
       .int({ error: "Page must be an integer" })
       .positive({ error: "Page must be positive" })
       .default(1),
+
     limit: z.coerce
       .number({ error: "Limit must be a number" })
       .int({ error: "Limit must be an integer" })
       .positive({ error: "Limit must be positive" })
       .max(50, { error: "Limit cannot exceed 50" })
       .default(10),
+
     sortBy: z
       .enum(["createdAt", "name"], {
         error: "Sort by must be one of: createdAt, name",
       })
       .default("createdAt"),
+
     sortOrder: z
       .enum(["asc", "desc"], {
         error: "Sort order must be either asc or desc",
       })
       .default("desc"),
+
+    isAdmin: z.coerce
+      .boolean({ error: "isAdmin must be a boolean" })
+      .optional(),
+
+    status: CompanyStatusEnum.optional(),
   },
   { error: "Query parameters must be valid" },
 );

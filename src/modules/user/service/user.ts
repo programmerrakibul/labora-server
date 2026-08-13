@@ -1,4 +1,4 @@
-import type { TUser } from "@/user/interface/user.js";
+import { Role, type TUser } from "@/user/interface/user.js";
 import User from "@/user/model/user.js";
 import {
   UpdateProfileSchema,
@@ -108,6 +108,10 @@ const updateUserRole = async (id: string, payload: unknown) => {
   const user = await User.findById(id);
 
   if (!user) throw new NotFoundError("User not found.");
+
+  if ([Role.ADMIN, Role.JOB_SEEKER].includes(role)) {
+    user.companyId = null;
+  }
 
   user.role = role;
   await user.save();
