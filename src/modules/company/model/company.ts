@@ -79,6 +79,7 @@ const schema = new Schema<TCompany>(
       type: Boolean,
       default: false,
       required: true,
+      index: true,
     },
   },
 

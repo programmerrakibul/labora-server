@@ -12,6 +12,7 @@ import {
   PageLimitSchema,
   RespondToRequestSchema,
   UpdateCompanySchema,
+  UpdateCompanyStatusSchema,
 } from "@/company/validation/company.js";
 import { Role, type TTokenUser } from "@/user/interface/user.js";
 import User from "@/user/model/user.js";
@@ -25,6 +26,7 @@ import {
   BadRequestError,
   ConflictError,
   NotFoundError,
+  UnprocessableEntityError,
 } from "http-errors-enhanced";
 import mongoose from "mongoose";
 
@@ -79,16 +81,29 @@ const createCompany = async (data: unknown, user: TTokenUser) => {
   }
 };
 
-const getCompanies = async (query: unknown) => {
+const getCompanies = async (query: unknown, role?: Role) => {
   const validatedQuery = parseOrThrow(CompanyQuerySchema, query);
 
   const filter: Record<string, unknown> = { status: COMPANY_STATUS.ACTIVE };
 
+  if (validatedQuery.isAdmin && role === Role.ADMIN) {
+    if (validatedQuery.status) {
+      filter.status = validatedQuery.status;
+    } else {
+      delete filter.status;
+    }
+  }
+
   if (validatedQuery.search) {
     filter.$or = [
       { name: { $regex: validatedQuery.search, $options: "i" } },
+      { email: { $regex: validatedQuery.search, $options: "i" } },
       { industry: { $regex: validatedQuery.search, $options: "i" } },
     ];
+  }
+
+  if (validatedQuery.status) {
+    filter.status = validatedQuery.status;
   }
 
   const sort: Record<string, 1 | -1> = {};
@@ -144,6 +159,29 @@ const updateCompany = async (id: string, data: unknown, userId: string) => {
     runValidators: true,
     returnDocument: "after",
   })
+    .lean()
+    .exec();
+
+  return updatedCompany;
+};
+
+const updateCompanyStatus = async (id: string, payload: unknown) => {
+  if (!validateObjectId(id)) {
+    throw new UnprocessableEntityError("Invalid company ID.");
+  }
+
+  const _id = transformToObjectId(id);
+
+  const { status } = parseOrThrow(UpdateCompanyStatusSchema, payload);
+
+  const company = await Company.exists({ _id });
+  if (!company) throw new NotFoundError("Company not found.");
+
+  const updatedCompany = await Company.findByIdAndUpdate(
+    _id,
+    { status },
+    { runValidators: true, returnDocument: "after" },
+  )
     .lean()
     .exec();
 
@@ -482,17 +520,20 @@ const leaveCompany = async (userId: string, companyId: string | null) => {
   return membership;
 };
 
-const deleteCompany = async (id: string, userId: string) => {
+const deleteCompany = async (id: string, user: TTokenUser) => {
   if (!validateObjectId(id)) {
-    throw new BadRequestError("Invalid company ID.");
+    throw new UnprocessableEntityError("Invalid company ID.");
   }
 
-  const company = await Company.findOne({
+  const query: Record<string, string> = {
     _id: id,
-    ownerId: userId,
-  })
-    .lean()
-    .exec();
+  };
+
+  if (user.role !== Role.ADMIN) {
+    query.ownerId = user.id;
+  }
+
+  const company = await Company.findOne(query).lean().exec();
 
   if (!company) throw new NotFoundError("Company not found.");
 
@@ -508,7 +549,7 @@ const deleteCompany = async (id: string, userId: string) => {
       .lean()
       .exec();
 
-    const memberIds = approvedMembers.map((membership) => membership.userId);
+    const memberIds = approvedMembers.map((m) => m.userId);
 
     await CompanyMembership.updateMany(
       {
@@ -602,6 +643,7 @@ const services = {
   getCompanies,
   getCompanyById,
   updateCompany,
+  updateCompanyStatus,
   deleteCompany,
   requestJoin,
   cancelJoinRequest,

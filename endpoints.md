@@ -64,6 +64,16 @@ Authorization: Bearer <token>
 | ---------- | ------- | -------- |
 | `isActive` | boolean | Yes      |
 
+### PATCH /users/:id/role Body
+
+| Field  | Type | Required |
+| ------ | ---- | -------- |
+| `role` | enum | Yes      |
+
+**Values**: `JOB_SEEKER`, `COMPANY_MEMBER`, `COMPANY_OWNER`, `ADMIN`
+
+Setting role to `ADMIN` or `JOB_SEEKER` clears the user's `companyId`.
+
 ---
 
 ## Companies
@@ -72,9 +82,10 @@ Authorization: Bearer <token>
 | ------ | ------------------------------------ | ------------------- | ----------------------------- |
 | GET    | `/companies`                         | Public              | List/search companies         |
 | GET    | `/companies/:id`                     | Public              | Get company profile           |
-| POST   | `/companies`                         | Job Seeker          | Create a company              |
-| PATCH  | `/companies/:id`                     | Company Owner (own) | Update company profile        |
-| DELETE | `/companies/:id`                     | Company Owner (own) | Delete company                |
+| POST   | `/companies`                         | Job Seeker                 | Create a company              |
+| PUT    | `/companies/:id`                     | Company Owner (own)        | Update company profile        |
+| PATCH  | `/companies/:id/status`              | Admin                      | Suspend/activate company      |
+| DELETE | `/companies/:id`                     | Company Owner (own) / Admin | Delete company               |
 | POST   | `/companies/:id/join`                | Job Seeker          | Submit join request           |
 | DELETE | `/companies/:id/join`                | Authenticated (own) | Cancel own pending request    |
 | GET    | `/companies/:id/requests`            | Company Owner (own) | List pending join requests    |
@@ -86,27 +97,45 @@ Authorization: Bearer <token>
 
 ### GET /companies Query Parameters
 
-| Param       | Type   | Default   | Description             |
-| ----------- | ------ | --------- | ----------------------- |
-| `search`    | string | -         | Search name or industry |
-| `page`      | number | 1         | Page number             |
-| `limit`     | number | 10        | Items per page (max 50) |
-| `sortBy`    | enum   | createdAt | Sort field              |
-| `sortOrder` | enum   | desc      | Sort direction          |
+| Param       | Type   | Default   | Description                               |
+| ----------- | ------ | --------- | ----------------------------------------- |
+| `search`    | string | -         | Search name, email, or industry           |
+| `page`      | number | 1         | Page number                               |
+| `limit`     | number | 10        | Items per page (max 50)                   |
+| `status`    | enum   | -         | Filter by status (`ACTIVE`/`SUSPENDED`)   |
+| `isAdmin`   | boolean| -         | Admin only: include all statuses (default returns ACTIVE only) |
+| `sortBy`    | enum   | createdAt | Sort field (`createdAt`/`name`)           |
+| `sortOrder` | enum   | desc      | Sort direction                            |
 
 ### POST /companies Body
 
 | Field      | Type               | Required |
 | ---------- | ------------------ | -------- |
 | `name`     | string             | Yes      |
+| `email`    | string (email)     | Yes      |
 | `website`  | string (URL)       | No       |
 | `industry` | string             | No       |
 | `about`    | string             | No       |
 | `location` | object             | No       |
 | `logo`     | string (asset URL) | No       |
 
-`maxRecruiters`, `ownerId`, `recruiterCount`, and `status` are never accepted
-from the client — server-assigned only.
+`email` is lowercased server-side and must be unique.
+
+`maxRecruiters`, `ownerId`, `recruiterCount`, `status`, and `isVerified` are
+never accepted from the client — server-assigned only.
+
+### PUT /companies/:id Body
+
+All fields optional (partial update). Same fields as `POST /companies`
+including `email` (lowercased; must be unique).
+
+### PATCH /companies/:id/status Body
+
+| Field    | Type | Required |
+| -------- | ---- | -------- |
+| `status` | enum | Yes      |
+
+**Values**: `ACTIVE`, `SUSPENDED`
 
 ### PATCH /companies/:id/requests/:requestId Body
 

@@ -13,7 +13,7 @@ const createCompany = async (req: Request, res: Response) => {
 };
 
 const getCompanies = async (req: Request, res: Response) => {
-  const result = await services.getCompanies(req.query);
+  const result = await services.getCompanies(req.query, req.user?.role);
 
   sendSuccessResponse(res, OK, {
     message: "Companies retrieved successfully",
@@ -43,8 +43,20 @@ const updateCompany = async (req: Request<{ id: string }>, res: Response) => {
   });
 };
 
+const updateCompanyStatus = async (
+  req: Request<{ id: string }>,
+  res: Response,
+) => {
+  const result = await services.updateCompanyStatus(req.params.id, req.body);
+
+  sendSuccessResponse(res, OK, {
+    message: "Company status updated successfully",
+    data: result,
+  });
+};
+
 const deleteCompany = async (req: Request<{ id: string }>, res: Response) => {
-  const result = await services.deleteCompany(req.params.id, req.user!.id);
+  const result = await services.deleteCompany(req.params.id, req.user!);
 
   sendSuccessResponse(res, OK, {
     message: result.message,
@@ -154,6 +166,7 @@ const controllers = {
   getCompanies,
   getCompanyById,
   updateCompany,
+  updateCompanyStatus,
   deleteCompany,
   requestJoin,
   cancelJoinRequest,
