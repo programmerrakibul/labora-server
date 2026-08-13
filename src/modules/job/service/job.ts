@@ -68,6 +68,14 @@ const getJobs = async (query: unknown) => {
     ];
   }
 
+  if (validatedQuery.companyId) {
+    const companyId = validatedQuery.companyId;
+
+    if (validateObjectId(companyId)) {
+      filter.companyId = transformToObjectId(companyId);
+    }
+  }
+
   if (validatedQuery.category) {
     filter.category = validatedQuery.category.toLowerCase();
   }

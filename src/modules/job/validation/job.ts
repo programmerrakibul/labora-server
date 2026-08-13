@@ -185,6 +185,7 @@ export const JobQuerySchema = z.object(
         error: "Sort order must be either asc or desc",
       })
       .default("desc"),
+    companyId: z.string({ error: "Company ID must be a string" }).optional(),
   },
   { error: "Query parameters must be valid" },
 );

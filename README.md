@@ -69,9 +69,7 @@ company affiliation at a time.
 
 ## Endpoints
 
-See [endpoints.md](./endpoints.md) for the full API reference, including the
-`/api/companies` module (create company, join requests, approvals, members,
-leave/delete).
+See [endpoints.md](./endpoints.md) for the full API reference.
 
 ## Environment Variables
 
