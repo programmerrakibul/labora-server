@@ -19,7 +19,9 @@ export const initAuth = () => {
           user: {
             ...user,
             role: (user as { role?: Role }).role ?? Role.JOB_SEEKER,
-            companyId: toObjectIdString((user as { companyId?: string | null }).companyId),
+            companyId: toObjectIdString(
+              (user as { companyId?: string | null }).companyId,
+            ),
           },
           session,
         };
@@ -100,5 +102,3 @@ export const initAuth = () => {
     },
   });
 };
-
-
