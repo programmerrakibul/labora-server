@@ -12,6 +12,15 @@ const schema = new Schema<TCompany>(
       index: true,
     },
 
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      index: true,
+      trim: true,
+      toLowerCase: true,
+    },
+
     logo: {
       type: String,
       trim: true,
@@ -64,6 +73,12 @@ const schema = new Schema<TCompany>(
       type: String,
       enum: Object.values(COMPANY_STATUS),
       default: COMPANY_STATUS.ACTIVE,
+    },
+
+    isVerified: {
+      type: Boolean,
+      default: false,
+      required: true,
     },
   },
 

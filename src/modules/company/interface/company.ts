@@ -1,23 +1,19 @@
+import type {
+  TCompanyStatus,
+  TCreateCompanyInput,
+  TMembershipStatus,
+} from "@/company/validation/company.js";
 import type { Role } from "@/user/interface/user.js";
 import type { Document, Types } from "mongoose";
-import type { TCompanyStatus, TMembershipStatus } from "../validation/company.js";
 
-export type TCompany = Document & {
-  name: string;
-  logo?: string;
-  website?: string;
-  industry?: string;
-  about?: string;
-  location?: {
-    city?: string;
-    state?: string;
-    country?: string;
+export type TCompany = Document &
+  TCreateCompanyInput & {
+    ownerId: Types.ObjectId;
+    maxRecruiters: number;
+    recruiterCount: number;
+    status: TCompanyStatus;
+    isVerified: boolean;
   };
-  ownerId: Types.ObjectId;
-  maxRecruiters: number;
-  recruiterCount: number;
-  status: TCompanyStatus;
-};
 
 export type TCompanyMembership = Document & {
   companyId: Types.ObjectId;

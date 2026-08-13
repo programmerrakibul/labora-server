@@ -37,6 +37,15 @@ export const CreateCompanySchema = z.object(
       .min(1, { error: "Company name cannot be empty" })
       .max(150, { error: "Company name cannot exceed 150 characters" }),
 
+    email: z
+      .string({ error: "Email is required" })
+      .trim()
+      .email({ error: "Email must be a valid email address" })
+      .min(1, {
+        error: "Email is required",
+      })
+      .transform((email) => email.toLowerCase()),
+
     website: z
       .string({ error: "Website must be a string" })
       .trim()
@@ -55,7 +64,7 @@ export const CreateCompanySchema = z.object(
       .optional(),
 
     location: LocationSchema,
-    
+
     logo: z.string({ error: "Logo must be a string" }).trim().optional(),
   },
   { error: "Company data must be a valid object" },
