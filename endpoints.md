@@ -151,6 +151,7 @@ affiliated).
 | `maxSalary`        | number | -         | Maximum salary          |
 | `sortBy`           | enum   | createdAt | Sort field              |
 | `sortOrder`        | enum   | desc      | Sort direction          |
+| `companyId`        | string | -         | Company ID              |
 
 ### POST /jobs Body
 
